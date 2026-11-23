@@ -1,0 +1,1491 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#12141c">
+<title>CLEF HEROES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#12141c;--surface:#1d2130;--border:#3a4260;--card-border:1px solid #3a4260;--text:#f2e8d0;--text2:#cfc8b6;--muted:#b9b2a0;
+--hl:#d9a441;--en:#d9a441;--mark:#d9a441;--bar-on:#d9a441;--bar-off:#3a4260;--hot-bg:#241a1f;--hot-line:#8a3a35;--hot-mark:#ff8a7a;
+--accent:#d9a441;--accent-ink:#12141c;--radius:16px;--btn-radius:14px;
+--hud:#12141c;--stage:#f2e8d0;--ink:#1b1a17;--judge:#d9a441;--label:#8a5a00;--stage-muted:#6b6250;--dot-off:#6b6250;
+--combo:#d9a441;--heart:#e5484d;--perfect:#8a5a00;--good:#2f6b3a;--bad:#b3261e;--spark:#d9a441;
+--kb:#0d0f15;--obtn:#1d2130;--obtn-line:#3a4260;--oct:#d9a441;--key:#f2e8d0;--key-line:#f2e8d0;--key-ink:#1b1a17;--key-down:#d9a441;
+--key-black:#2a2f40;--key-black-down:#d9a441;--bad-key:#ff8a7a;--scrim:rgba(5,6,10,.72);
+--over:#ff8a7a;--score:#d9a441;--pill:#2a3a63;--pill-ink:#cfe0ff;
+--font-d:'Cinzel',Georgia,'Times New Roman',serif;--font-k:'Noto Serif KR','Noto Sans KR',serif;--font-b:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+.d-fall{animation:dfall .55s ease-in forwards}
+@keyframes dfall{0%{transform:none;opacity:1;filter:brightness(2.4)}15%{filter:none}100%{transform:translate(-8px,34px) rotate(-38deg);opacity:0}}
+.slash{fill:none;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:slashgo .3s ease-out forwards}
+.slash.two{animation-delay:.07s}
+@keyframes slashgo{0%{stroke-dashoffset:100;opacity:1}60%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.pt{animation:ptfly .55s ease-out forwards}
+@keyframes ptfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+/* 공통 스타일. 색과 글꼴은 테마가 변수로 정한다. */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);overscroll-behavior:none}
+body{font-family:var(--font-b);color:var(--text);-webkit-user-select:none;user-select:none;touch-action:manipulation}
+button{font-family:inherit;color:inherit;cursor:pointer}
+#app{position:relative;height:100vh;height:100dvh;max-width:520px;margin:0 auto;overflow:hidden;background:var(--bg)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.active{display:flex}
+.decor{position:absolute;left:0;right:0;top:0;pointer-events:none;overflow:hidden}
+.decor svg{display:block;width:100%;height:auto}
+
+/* 머리글 */
+.head{position:relative;padding:max(68px,calc(env(safe-area-inset-top) + 24px)) 24px 0;display:flex;flex-direction:column;gap:8px}
+.logo{margin:0;font-family:var(--font-d);font-weight:700;font-size:clamp(34px,10.5vw,46px);line-height:1.1;letter-spacing:1px;color:var(--text)}
+.logo .hl{color:var(--hl)}
+.sub{margin:4px 0 0;font-size:14px;line-height:1.5;color:var(--muted)}
+.foot{position:relative;text-align:center;font-size:12px;color:var(--muted);padding:10px 0 max(22px,env(safe-area-inset-bottom))}
+.icon-btn{position:absolute;right:14px;top:max(14px,env(safe-area-inset-top));width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;z-index:5}
+#btn-bgm{right:66px}
+.icon-btn svg{width:22px;height:22px;fill:none;stroke:var(--text);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* 카드 */
+.cards{position:relative;display:flex;flex-direction:column;gap:14px;padding:22px 20px 6px;flex:1;min-height:0;overflow-y:auto}
+.card{display:flex;align-items:center;gap:18px;width:100%;flex:1 0 auto;min-height:150px;max-height:190px;padding:14px 18px;text-align:left;background:var(--surface);border:var(--card-border);border-radius:var(--radius)}
+.card:active{transform:scale(.985)}
+.flag{flex:none;display:flex;align-items:center;justify-content:center}
+.ctext{display:flex;flex-direction:column;gap:4px;min-width:0}
+.en{font-family:var(--font-d);font-weight:700;font-size:12px;letter-spacing:3px;color:var(--en)}
+.kr{font-family:var(--font-k);font-size:30px;line-height:1.15;color:var(--text);font-weight:900}
+.desc{font-size:13px;line-height:1.5;color:var(--muted)}
+.tag{display:inline-flex;align-self:flex-start;align-items:center;min-height:30px;padding:0 12px;border-radius:15px;font-size:12px;font-weight:700;margin-top:6px}
+
+/* 난이도 화면 */
+.lhead{position:relative;padding:max(30px,env(safe-area-inset-top)) 20px 0;display:flex;flex-direction:column;gap:10px}
+.back{align-self:flex-start;min-height:44px;padding:0 14px 0 0;background:none;border:0;font-size:14px;color:var(--muted)}
+.lrow{display:flex;align-items:center;gap:14px}
+.lrow h2{margin:0;font-family:var(--font-k);font-size:26px;line-height:1.2;font-weight:900}
+.card.level{min-height:112px;max-height:150px;gap:14px}
+.mark{flex:none;width:84px;text-align:center;font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:50px;line-height:1;color:var(--mark)}
+.ltext{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.lname{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.lname b{font-family:var(--font-d);font-size:18px}
+.lname span{font-size:13px;color:var(--muted)}
+.ldesc{font-size:13px;line-height:1.5;color:var(--text2)}
+.bars{display:flex;gap:4px;margin-top:4px}
+.bars i{width:26px;height:6px;border-radius:3px;background:var(--bar-off)}
+.bars i.on{background:var(--bar-on)}
+.best{font-size:12px;color:var(--muted);margin-top:2px}
+.card.hot{background:var(--hot-bg);border-color:var(--hot-line)}
+.card.hot .mark{color:var(--hot-mark)}
+.card.hot .bars i.on{background:var(--hot-mark)}
+
+/* 인게임 */
+#s-game{display:none;grid-template-rows:minmax(0,3fr) minmax(0,1fr)}
+#s-game.active{display:grid}
+.top{display:flex;flex-direction:column;min-height:0;background:var(--hud)}
+.hud{flex:none;height:64px;padding:8px 14px 8px 20px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:max(8px,env(safe-area-inset-top));height:calc(64px + env(safe-area-inset-top))}
+.hud .k{font-size:11px;letter-spacing:3px;color:var(--muted)}
+.hud .v{font-family:var(--font-d);font-weight:700;font-size:25px;line-height:1.1}
+.hud .c{display:flex;flex-direction:column;gap:2px}
+.hud .mid{align-items:center}
+.hud .mid .v{color:var(--combo)}
+.hud .r{align-items:flex-end;gap:3px}
+.life{display:flex;align-items:center;gap:6px;font-family:var(--font-d);font-weight:700;font-size:15px}
+.life svg{width:18px;height:18px}
+.life svg path{fill:var(--heart)}
+.tempo{font-size:11.5px;color:var(--muted)}
+.pause{flex:none;width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center}
+.pause svg{width:18px;height:18px;fill:var(--text)}
+.stage-wrap{flex:1;min-height:0;background:var(--stage);position:relative}
+.stage-wrap svg{display:block;width:100%;height:100%}
+#stage .bg{fill:var(--stage)}
+#stage .staff line{stroke:var(--ink);stroke-width:1.7}
+#stage .judge{stroke:var(--judge);stroke-width:2;stroke-dasharray:6 5}
+#stage .band{fill:var(--judge);opacity:.18}
+#stage .flash{fill:var(--judge);opacity:0;pointer-events:none}
+#stage .flash.perfect{fill:var(--perfect)}
+#stage .flash.good{fill:var(--good)}
+#stage .flash.bad{fill:var(--bad)}
+#stage .flash.go{animation:flashgo .35s ease-out}
+@keyframes flashgo{0%{opacity:.6}100%{opacity:0}}
+#stage .ghostn{pointer-events:none;color:var(--judge);fill:currentColor;stroke:currentColor;animation:ghostgo .45s ease-out forwards;filter:drop-shadow(0 0 5px currentColor)}
+#stage .ghostn line{stroke-width:2.4;stroke-linecap:round}
+#stage .ghostn ellipse,#stage .ghostn path{stroke:none}
+#stage .ghostn.perfect{color:var(--perfect)}
+#stage .ghostn.good{color:var(--good)}
+#stage .ghostn.bad{color:var(--bad)}
+@keyframes ghostgo{0%{opacity:1}70%{opacity:.9}100%{opacity:0}}
+#enemies .inwin{filter:drop-shadow(0 0 6px var(--judge))}
+#stage .jl{fill:var(--label);font-size:12px;font-weight:700;text-anchor:middle}
+#stage .beatlab{fill:var(--stage-muted);font-family:var(--font-d);font-weight:700;font-size:12px;letter-spacing:3px}
+#stage .hint{fill:var(--stage-muted);font-size:12px;text-anchor:middle}
+#stage .dot{fill:none;stroke:var(--dot-off);stroke-width:2}
+#stage .dot.on{fill:var(--judge);stroke:var(--judge)}
+#stage .clefname{fill:var(--stage-muted);font-size:12px;font-weight:700}
+.shake{animation:shake .28s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.clefpulse{animation:cpulse .7s}
+@keyframes cpulse{0%{opacity:0}30%{opacity:1}100%{opacity:1}}
+.fx{pointer-events:none}
+.fxt{font-family:var(--font-d);font-weight:700;font-size:20px;text-anchor:middle;paint-order:stroke;stroke:var(--stage);stroke-width:4px;stroke-linejoin:round;animation:fxup .8s ease-out forwards}
+.fxt.perfect{fill:var(--perfect)}
+.fxt.good{fill:var(--good);font-size:17px}
+.fxt.ok{fill:var(--stage-muted);font-size:15px}
+.fxt.bad{fill:var(--bad)}
+.fxt.big{font-size:24px;animation-duration:1.5s}
+.fxt.small{font-size:12px;font-family:var(--font-b)}
+@keyframes fxup{0%{opacity:0;transform:translateY(8px)}15%{opacity:1}100%{opacity:0;transform:translateY(-30px)}}
+.dbody{transform-box:fill-box;transform-origin:center}
+.dparts>*{transform-box:fill-box;transform-origin:center}
+
+/* 건반 */
+.kbd{display:flex;flex-direction:column;gap:6px;padding:8px 8px max(10px,env(safe-area-inset-bottom));background:var(--kb);min-height:0}
+.oct{flex:none;height:44px;display:flex;align-items:center;justify-content:space-between}
+.obtn{width:56px;height:44px;border-radius:14px;border:2px solid var(--obtn-line);background:var(--obtn);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.obtn:active{transform:scale(.95)}
+.oinfo{display:flex;flex-direction:column;align-items:center;gap:1px}
+.oinfo .k{font-size:11px;letter-spacing:2px;color:var(--muted)}
+.oinfo .v{font-family:var(--font-d);font-weight:700;font-size:17px;color:var(--oct)}
+.oinfo .v small{font-size:12px;color:var(--muted);font-family:var(--font-b);font-weight:400}
+.keys{position:relative;flex:1;min-height:70px;touch-action:none}
+.key{position:absolute;top:0;border:0;padding:0;touch-action:none}
+.key.white{height:100%;width:calc(12.5% - 2px);background:var(--key);border:2px solid var(--key-line);border-top:0;border-radius:0 0 10px 10px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;font-weight:700;font-size:15px;color:var(--key-ink)}
+.key.black{height:63%;width:7%;background:var(--key-black);border-radius:0 0 7px 7px;z-index:2}
+.key.down{background:var(--key-down);box-shadow:0 0 14px var(--judge)}
+.key.black.down{background:var(--key-black-down)}
+.key.bad{background:var(--bad-key)}
+.keys.nolabel .key.white{color:transparent}
+.keys.noacc .key.black{opacity:.6}
+
+/* 일시정지, 게임 오버 */
+.overlay{position:absolute;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;z-index:20;padding:24px}
+.overlay.show{display:flex}
+.panel{width:100%;max-width:320px;background:var(--surface);border:var(--card-border);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.panel h3{margin:0 0 4px;text-align:center;font-family:var(--font-d);font-size:22px}
+.btn{min-height:52px;border-radius:var(--btn-radius);border:var(--card-border);background:var(--surface);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 16px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-size:17px;min-height:56px}
+.btn:active{transform:scale(.98)}
+.row{display:flex;gap:12px}
+.row .btn{flex:1;min-height:48px;font-size:14px}
+
+#s-over{align-items:stretch}
+.over-main{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 24px}
+.over-title{margin:0;font-family:var(--font-d);font-weight:700;font-size:clamp(40px,13vw,54px);line-height:1.1;letter-spacing:4px;color:var(--over)}
+.over-sub{font-size:14px;color:var(--muted)}
+.over-score .k{font-size:12px;letter-spacing:4px;color:var(--muted);text-align:center;margin-top:26px}
+.over-score .v{font-family:var(--font-d);font-weight:700;font-size:clamp(46px,16vw,64px);line-height:1.05;color:var(--score);text-align:center}
+.badge{margin-top:8px;display:inline-flex;align-items:center;min-height:30px;padding:0 14px;border-radius:15px;background:var(--pill);color:var(--pill-ink);font-size:13px;font-weight:700}
+.stats{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 24px}
+.stat{background:var(--surface);border:var(--card-border);border-radius:calc(var(--radius) - 2px);padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.stat b{font-family:var(--font-d);font-size:24px}
+.stat span{font-size:12px;color:var(--muted)}
+.over-btns{position:relative;padding:18px 24px max(26px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// 자동 생성 파일 (tools/extract_glyphs.py). 음자리표/임시표 윤곽 — GNU FreeSerif (GPL + 폰트 예외 조항)
+// 좌표계: 폰트 단위, y 위쪽이 +. 오선 기준: 맨 아래 줄 y=-24, 줄 간격 197 단위 (음자리표 3종 모두 동일 기준).
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+  CH.Glyphs = {"G":{"d":"M434 2Q464 -103 464 -170Q464 -223 427 -257Q390 -291 337 -291Q287 -291 250 -261.5Q213 -232 213 -190Q213 -160 233.5 -133.5Q254 -107 283.5 -107Q313 -107 331.5 -128.5Q350 -150 350 -178Q350 -240 280 -240Q298 -268 338 -268Q353 -268 368.5 -263.5Q384 -259 401 -248Q418 -237 428.5 -213.5Q439 -190 439 -157Q439 -136 411 -6Q389 -12 356 -12Q259 -12 189.5 60Q120 132 120 232Q120 267 131.5 303Q143 339 157.5 366.5Q172 394 200.5 428.5Q229 463 248.5 483.5Q268 504 303 539Q280 621 280 689Q280 779 313 839.5Q346 900 379 900Q389 900 401.5 887Q414 874 426 851Q438 828 446.5 790.5Q455 753 455 710Q455 551 342 447L368 329Q384 332 397 332Q458 332 500 282.5Q542 233 542 162Q542 44 434 2ZM426 746Q426 801 394 801Q358 801 333 748Q308 695 308 630Q308 588 321 557Q359 580 392.5 639.5Q426 699 426 746ZM498 128Q498 183 466 216Q434 249 383 249L428 23Q498 52 498 128ZM407 17 361 247Q334 241 311.5 214Q289 187 289 158Q289 143 295 128.5Q301 114 309.5 104Q318 94 327 86Q336 78 342 74.5Q348 71 348 71L340 66Q307 75 277.5 106Q248 137 248 184Q248 231 277.5 270.5Q307 310 343 323L325 430Q168 299 168 177Q168 104 223 55Q278 6 348 6Q365 6 407 17Z","b":[120,-291,542,900]},"F":{"d":"M564 704Q582 704 594.5 691Q607 678 607 661Q607 644 593 631Q579 618 563 618Q521 618 521 663Q521 681 534 692.5Q547 704 564 704ZM607 469Q607 450 594 437Q581 424 564 424Q521 424 521 469Q521 485 533.5 498Q546 511 564 511Q582 511 594.5 497Q607 483 607 469ZM285 757Q366 757 421 701.5Q476 646 476 569Q476 531 465.5 495Q455 459 432 426.5Q409 394 386 367Q363 340 326 313Q289 286 264 267.5Q239 249 196.5 226Q154 203 135.5 193.5Q117 184 80 166L75 182Q76 183 102 200Q128 217 144 227.5Q160 238 191.5 263Q223 288 244 309.5Q265 331 291.5 363.5Q318 396 334 427Q350 458 361.5 498Q373 538 373 578Q373 735 262 735Q225 735 199 725.5Q173 716 161.5 702Q150 688 145 677.5Q140 667 140 659Q140 644 160 644Q168 644 179 647.5Q190 651 194 651Q221 651 239 634Q257 617 257 592Q257 563 235 544Q213 525 183 525Q144 525 119 548Q94 571 94 607Q94 673 150.5 715Q207 757 285 757Z","b":[75,166,607,757]},"C":{"d":"M372 309Q440 309 481 267Q522 225 522 156Q522 81 473 29.5Q424 -22 353 -22Q292 -22 251 5.5Q210 33 210 82Q210 102 227 119.5Q244 137 266 137Q290 137 306.5 120.5Q323 104 323 82Q323 67 307.5 47.5Q292 28 292 25Q292 7 327 7Q414 7 414 156Q414 196 410 220.5Q406 245 396 255Q386 265 377 267.5Q368 270 350 270Q321 270 301.5 247Q282 224 263 167Q239 301 174 357V-24H136V764H174V382Q239 438 263 571Q288 469 350 469Q368 469 377 471Q386 473 396 483Q406 493 410 517Q414 541 414 582Q414 732 327 732Q292 732 292 715Q292 711 307.5 691.5Q323 672 323 657Q323 635 306.5 618.5Q290 602 266 602Q244 602 227 619.5Q210 637 210 657Q210 706 251 733.5Q292 761 353 761Q424 761 473 709.5Q522 658 522 582Q522 516 481.5 473.5Q441 431 372 431Q337 431 302 444L269 370L302 295Q339 309 372 309ZM99 -24H0V764H99Z","b":[0,-24,522,764]},"sharp":{"d":"M365 24 319 6V-193L275 -209V-10L138 -63V-262L94 -279V-80L50 -96V0L94 17V262L50 245V341L94 358V589L138 606V376L275 429V659L319 675V446L365 464V366L319 348V104L365 122ZM275 88V332L138 279V34Z","b":[50,-279,365,675]},"flat":{"d":"M222 441Q275 441 302 408Q329 375 329 317Q329 273 299.5 234Q270 195 192.5 117Q115 39 56 -34V783L99 802V402Q148 441 222 441ZM232 308Q232 373 183 373Q159 373 134.5 358.5Q110 344 99 319V87Q159 155 195.5 214.5Q232 274 232 308Z","b":[56,-34,329,802]}};
+  CH.GlyphStaff = { space: 197, bottom: -24 };
+})();
+
+// 음 위치 계산 (순수 규칙, 화면과 무관)
+// 음 높이 표현: step = 7*옥타브 + 계이름(C=0 ... B=6), 가온 도(C4) = 28.  acc = -1(♭) 0 +1(♯)
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+
+  const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const KR = ['도', '레', '미', '파', '솔', '라', '시'];
+  const SEMI = [0, 2, 4, 5, 7, 9, 11];
+
+  // bottomStep: 오선 맨 아래 줄의 step.  line: 음자리표가 가리키는 줄(아래에서 1~5)
+  const CLEFS = {
+    G:  { id: 'G',  glyph: 'G', line: 2, bottomStep: 30, name: '높은음자리표' }, // 맨 아래 줄 = E4
+    F:  { id: 'F',  glyph: 'F', line: 4, bottomStep: 18, name: '낮은음자리표' }, // 맨 아래 줄 = G2
+    C1: { id: 'C1', glyph: 'C', line: 1, bottomStep: 28, name: '소프라노' },     // 1번 줄 = 가온 도
+    C2: { id: 'C2', glyph: 'C', line: 2, bottomStep: 26, name: '메조소프라노' },
+    C3: { id: 'C3', glyph: 'C', line: 3, bottomStep: 24, name: '알토' },
+    C4: { id: 'C4', glyph: 'C', line: 4, bottomStep: 22, name: '테너' },
+    C5: { id: 'C5', glyph: 'C', line: 5, bottomStep: 20, name: '바리톤' },
+  };
+
+  const SHARP_OK = [0, 1, 3, 4, 5]; // C D F G A  (E#, B# 제외)
+  const FLAT_OK = [1, 2, 4, 5, 6];  // D E G A B  (Cb, Fb 제외)
+
+  const OCTAVE_MIN = 1;
+  const OCTAVE_MAX = 7;
+
+  const letterOf = (step) => ((step % 7) + 7) % 7;
+  const octaveOf = (step) => Math.floor(step / 7);
+  const stepOf = (letter, octave) => 7 * octave + letter;
+  const midiOf = (step, acc) => 12 * (octaveOf(step) + 1) + SEMI[letterOf(step)] + (acc || 0);
+  const pitchClass = (midi) => ((midi % 12) + 12) % 12;
+
+  // 오선 위 위치: 0 = 맨 아래 줄, 2 = 2번째 줄, 8 = 맨 위 줄 (홀수 = 칸)
+  const staffPos = (clef, step) => step - CLEFS[clef].bottomStep;
+
+  // 덧줄 개수 (오선 위/아래 칸은 덧줄 0개)
+  function ledgerCount(pos) {
+    if (pos < 0) return Math.floor(-pos / 2);
+    if (pos > 8) return Math.floor((pos - 8) / 2);
+    return 0;
+  }
+
+  // 그려야 할 덧줄의 위치 목록 (짝수 위치)
+  function ledgerLines(pos) {
+    const out = [];
+    for (let p = -2; p >= pos; p -= 2) out.push(p);
+    for (let p = 10; p <= pos; p += 2) out.push(p);
+    return out;
+  }
+
+  // 음자리표의 건반 기본 옥타브 (오선 가운데 줄이 있는 옥타브)
+  const defaultOctave = (clef) => Math.floor((CLEFS[clef].bottomStep + 4) / 7);
+
+  // 가장 가까운 음에 대한 건반 판정
+  function judgePress(noteMidi, pressedMidi) {
+    if (noteMidi === pressedMidi) return 'exact';
+    if (pitchClass(noteMidi) === pitchClass(pressedMidi)) return 'octave';
+    return 'wrong';
+  }
+
+  // 건반: 흰 건반 8개(도~높은 도), 검은 건반 5개
+  const WHITE_SEMI = [0, 2, 4, 5, 7, 9, 11, 12];
+  const BLACK_KEYS = [
+    { after: 0, semi: 1 }, { after: 1, semi: 3 }, { after: 3, semi: 6 },
+    { after: 4, semi: 8 }, { after: 5, semi: 10 },
+  ];
+  const keyMidi = (octave, semi) => 12 * (octave + 1) + semi;
+
+  // 건반 번호 → 오선에 그릴 음 (검은 건반은 ♯으로 적는다. 이명동음은 같은 음으로 치므로 어느 쪽이든 상관없다)
+  const NATURAL_OF_PC = [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0], [3, 0], [3, 1], [4, 0], [4, 1], [5, 0], [5, 1], [6, 0]];
+  function spellMidi(midi) {
+    const [letter, acc] = NATURAL_OF_PC[pitchClass(midi)];
+    return { step: stepOf(letter, Math.floor(midi / 12) - 1), acc };
+  }
+
+  // 무작위 음 만들기. range = [아래, 위] 오선 위치. 덧줄이 적을수록 더 자주 나오도록 가중치를 준다.
+  function randomPitch(clef, range, allowAcc, rng, prevStep) {
+    const [min, max] = range;
+    const base = CLEFS[clef].bottomStep;
+    const cand = [];
+    for (let pos = min; pos <= max; pos++) {
+      const step = base + pos;
+      if (step === prevStep) continue;
+      cand.push({ step, w: 1 / (1 + 0.3 * ledgerCount(pos)) });
+    }
+    const total = cand.reduce((a, c) => a + c.w, 0);
+    let r = rng() * total;
+    let pick = cand[cand.length - 1];
+    for (const c of cand) { r -= c.w; if (r <= 0) { pick = c; break; } }
+    const step = pick.step;
+    const letter = letterOf(step);
+    let acc = 0;
+    if (allowAcc && rng() < 0.4) {
+      const opts = [];
+      if (SHARP_OK.includes(letter)) opts.push(1);
+      if (FLAT_OK.includes(letter)) opts.push(-1);
+      if (opts.length) acc = opts[Math.floor(rng() * opts.length) % opts.length];
+    }
+    return { step, acc, midi: midiOf(step, acc), pos: step - base };
+  }
+
+  CH.Notation = {
+    LETTERS, KR, SEMI, CLEFS, OCTAVE_MIN, OCTAVE_MAX, WHITE_SEMI, BLACK_KEYS,
+    letterOf, octaveOf, stepOf, midiOf, pitchClass, staffPos, ledgerCount, ledgerLines,
+    defaultOctave, judgePress, keyMidi, spellMidi, randomPitch,
+  };
+  if (typeof module !== 'undefined') module.exports = CH.Notation;
+})();
+
+// 난이도(다이나믹) 표 — 게임의 모든 조절값은 여기 한 곳에 모은다.
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+
+  // 화면 상수 (오선보 무대는 가로 390 기준 좌표계)
+  const Const = {
+    STAGE_W: 390,
+    STAGE_H: 560,
+    PX_PER_BEAT: 84,   // 1박 = 84px → 음가에 비례한 간격
+    JUDGE_X: 112,      // 박자선
+    CLEF_HIT_X: 84,    // 이 선을 넘으면 진지(음자리표)에 닿은 것
+    SPAWN_X: 420,      // 적이 생기는 위치 (화면 오른쪽 밖)
+    SEG_LEN: 12,       // C 나라: 이 개수마다 음자리표가 바뀜
+    GAP_BEATS: 2,      // 음자리표 바뀌기 전 빈 박
+    LEAD_IN: 4,        // 시작 후 첫 적이 도착하는 박
+    BASE_BPM: 60,
+  };
+
+  // 박자 판정 창. 기본은 '박' 단위(화면에서 박자선과 떨어진 거리에 해당)라서 템포가 올라가도 눈에 보이는 판정이 같다.
+  // 너무 빨라져도 사람이 칠 수 있도록 초 단위 최소 폭을 둔다.
+  //   active: 이 범위 안의 음표만 건반의 목표가 된다 (밖에서 누른 건 무시)
+  const TIMING = { perfect: 0.12, good: 0.25, active: 0.5, perfectMinSec: 0.08, goodMinSec: 0.15 };
+  const GRADE_POINTS = { perfect: 100, good: 70, ok: 40 };
+
+  const D = (dur, w) => ({ dur, w });
+
+  // range: 출제 음역.
+  //   [아래, 위] = 오선 가운데(3번째 줄)를 중심으로 한 오선 위치 (0 = 맨 아래 줄, 8 = 맨 위 줄)
+  //   'keyboard' = 음자리표의 기본 건반 한 옥타브 (도~도). 건반을 옮기지 않고 칠 수 있다.
+  // ledgers: 그 음역에서 나오는 덧줄 최대 개수 (시험으로 range 와 맞는지 확인한다).
+  const LEVELS = [
+    {
+      id: 'p', mark: 'p', name: 'Piano', kr: '여리게',
+      ledgers: 1, range: 'keyboard', accidentals: false, keyLabels: true, wrongEndsGame: false, mul: 1,
+      startBpm: 60, bpmStep: 2, bpmCap: 90,
+      durs: [D('whole', 1), D('half', 2)],
+      cPool: ['C3'],
+    },
+    {
+      id: 'mf', mark: 'mf', name: 'Mezzo Forte', kr: '조금 세게',
+      ledgers: 1, range: [-2, 10], accidentals: false, keyLabels: true, wrongEndsGame: false, mul: 1.5,
+      startBpm: 66, bpmStep: 3, bpmCap: 120,
+      durs: [D('whole', 1), D('half', 2), D('quarter', 3)],
+      cPool: ['C3', 'C4'],
+    },
+    {
+      id: 'f', mark: 'f', name: 'Forte', kr: '세게',
+      ledgers: 3, range: [-6, 14], accidentals: false, keyLabels: true, wrongEndsGame: false, mul: 2,
+      startBpm: 72, bpmStep: 4, bpmCap: 150,
+      durs: [D('whole', 1), D('half', 2), D('quarter', 3), D('eighth', 3)],
+      cPool: ['C3', 'C4', 'C2'],
+    },
+    {
+      id: 'ff', mark: 'ff', name: 'Fortissimo', kr: '아주 세게',
+      ledgers: 3, range: [-6, 14], accidentals: true, keyLabels: false, wrongEndsGame: true, mul: 3,
+      startBpm: 80, bpmStep: 5, bpmCap: 180,
+      durs: [D('whole', 1), D('half', 2), D('quarter', 3), D('eighth', 3),
+             D('sixteenth', 1.5), D('dhalf', 1), D('dquarter', 1.5)],
+      cPool: ['C1', 'C2', 'C3', 'C4', 'C5'],
+    },
+  ];
+  // 그 레벨·음자리표에서 나오는 오선 위치 범위 [아래, 위]
+  function rangeFor(level, clefId) {
+    if (level.range !== 'keyboard') return level.range;
+    const N = CH.Notation;
+    const oct = N.defaultOctave(clefId);
+    const bottom = N.CLEFS[clefId].bottomStep;
+    return [N.stepOf(0, oct) - bottom, N.stepOf(0, oct + 1) - bottom];
+  }
+  const KILLS_PER_BPM_STEP = 5; // 적 5마리를 쓰러뜨릴 때마다 템포 상승
+
+  const COUNTRIES = {
+    G: { id: 'G', clefs: () => ['G'], en: 'GRANDIA', kr: '그란디아', desc: '높고 높은 하늘나라', tag: '높은음자리표' },
+    F: { id: 'F', clefs: () => ['F'], en: 'FARGON', kr: '파르곤', desc: '깊고 깊은 땅속나라', tag: '낮은음자리표' },
+    C: { id: 'C', clefs: (lv) => LEVELS[lv].cPool, en: 'CORALIA', kr: '코랄리야', desc: '물결처럼 유연한 바다나라', tag: '가온음자리표' },
+  };
+
+  CH.Const = Const;
+  CH.Levels = { LEVELS, COUNTRIES, TIMING, GRADE_POINTS, KILLS_PER_BPM_STEP, rangeFor };
+  if (typeof module !== 'undefined') module.exports = CH.Levels;
+})();
+
+// 음가, 템포, 박자 판정, 점수 계산 (순수 규칙)
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+
+  // beats: 이 음표가 차지하는 박 수 (4분음표 = 1박).  다음 적은 이만큼 뒤에 도착한다.
+  const DURS = {
+    whole:     { id: 'whole',     beats: 4,    open: true,  stem: false, flags: 0, dot: false },
+    dhalf:     { id: 'dhalf',     beats: 3,    open: true,  stem: true,  flags: 0, dot: true },
+    half:      { id: 'half',      beats: 2,    open: true,  stem: true,  flags: 0, dot: false },
+    dquarter:  { id: 'dquarter',  beats: 1.5,  open: false, stem: true,  flags: 0, dot: true },
+    quarter:   { id: 'quarter',   beats: 1,    open: false, stem: true,  flags: 0, dot: false },
+    eighth:    { id: 'eighth',    beats: 0.5,  open: false, stem: true,  flags: 1, dot: false },
+    sixteenth: { id: 'sixteenth', beats: 0.25, open: false, stem: true,  flags: 2, dot: false },
+  };
+
+  // 적 5마리를 쓰러뜨릴 때마다 템포가 올라가고, 난이도별 상한이 있다.
+  function bpmFor(level, kills, killsPerStep) {
+    return Math.min(level.bpmCap, level.startBpm + level.bpmStep * Math.floor(kills / killsPerStep));
+  }
+
+  // 현재 템포에서의 판정 창(박 단위). 초 단위 최소 폭보다 좁아지면 그 폭으로 넓힌다.
+  function timingWindows(bpm, timing) {
+    const perfect = Math.max(timing.perfect, (timing.perfectMinSec * bpm) / 60);
+    const good = Math.max(timing.good, (timing.goodMinSec * bpm) / 60, perfect);
+    const active = Math.max(timing.active, good);
+    return { perfect, good, active };
+  }
+
+  // 박자 판정: 박자선에서 벗어난 거리(박)
+  function gradeTiming(deltaBeats, win) {
+    const a = Math.abs(deltaBeats);
+    if (a <= win.perfect) return 'perfect';
+    if (a <= win.good) return 'good';
+    return 'ok';
+  }
+
+  // 점수 = 기본점수 × (옥타브 틀리면 0.5) × (1 + 콤보×5%, 최대 +100%) × 템포 배율 × 난이도 배율
+  function pointsFor({ grade, octaveMiss, combo, bpm, levelMul, gradePoints, baseBpm }) {
+    const base = gradePoints[grade];
+    const comboMul = 1 + Math.min(combo, 20) * 0.05;
+    const tempoMul = bpm / baseBpm;
+    return Math.round(base * (octaveMiss ? 0.5 : 1) * comboMul * tempoMul * levelMul);
+  }
+
+  // 가중치 무작위 선택
+  function pickWeighted(list, rng) {
+    const total = list.reduce((a, x) => a + x.w, 0);
+    let r = rng() * total;
+    for (const x of list) { r -= x.w; if (r <= 0) return x; }
+    return list[list.length - 1];
+  }
+
+  CH.Rhythm = { DURS, bpmFor, timingWindows, gradeTiming, pointsFor, pickWeighted };
+  if (typeof module !== 'undefined') module.exports = CH.Rhythm;
+})();
+
+// 게임 엔진 (화면과 무관). update(dt)로 시간을 흘리고, press(midi)로 건반 입력을 넣는다.
+// 시간의 기준은 '박'(beatPos): 템포가 바뀌어도 적 사이의 간격(음가)은 그대로 유지된다.
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+
+  class Game {
+    constructor({ country, levelIndex, rng }) {
+      const { Const, Levels } = CH;
+      this.country = country;
+      this.levelIndex = levelIndex;
+      this.level = Levels.LEVELS[levelIndex];
+      this.rng = rng || Math.random;
+      this.pool = Levels.COUNTRIES[country].clefs(levelIndex);
+
+      this.beatPos = 0;
+      this.kills = 0;
+      this.score = 0;
+      this.combo = 0;
+      this.maxCombo = 0;
+      this.counts = { perfect: 0, good: 0, ok: 0 };
+      this.over = false;
+      this.reason = null;
+      this.enemies = [];
+      this.events = [];
+
+      this._nextId = 1;
+      this._genBeat = Const.LEAD_IN;
+      this._segCount = 0;
+      this._prevStep = null;
+      const first = this.pool[Math.floor(this.rng() * this.pool.length) % this.pool.length];
+      this.segments = [{ start: 0, clef: first }];
+      this._segClef = first;
+      this._shownClef = first;
+      this._fill();
+    }
+
+    bpm() {
+      return CH.Rhythm.bpmFor(this.level, this.kills, CH.Levels.KILLS_PER_BPM_STEP);
+    }
+
+    // 현재 화면에 표시되는 음자리표
+    clefAt(beatPos) {
+      let c = this.segments[0].clef;
+      for (const s of this.segments) if (s.start <= beatPos) c = s.clef;
+      return c;
+    }
+
+    enemyX(e) {
+      return CH.Const.JUDGE_X + (e.arrive - this.beatPos) * CH.Const.PX_PER_BEAT;
+    }
+
+    _pickNewClef() {
+      const others = this.pool.filter((c) => c !== this._segClef);
+      return others[Math.floor(this.rng() * others.length) % others.length];
+    }
+
+    _spawnOne() {
+      const { Const } = CH;
+      if (this.pool.length > 1 && this._segCount >= Const.SEG_LEN) {
+        // 음자리표가 바뀐다: 빈 박을 두고, 새 음자리표의 첫 적은 화면 밖에서 시작
+        const start = this._genBeat + Const.GAP_BEATS;
+        const clef = this._pickNewClef();
+        this.segments.push({ start, clef });
+        this._segClef = clef;
+        this._segCount = 0;
+        this._prevStep = null;
+        this._genBeat = start + (Const.SPAWN_X - Const.JUDGE_X) / Const.PX_PER_BEAT + 0.5;
+      }
+      const lv = this.level;
+      const durId = CH.Rhythm.pickWeighted(lv.durs, this.rng).dur;
+      const dur = CH.Rhythm.DURS[durId];
+      const p = CH.Notation.randomPitch(this._segClef, CH.Levels.rangeFor(lv, this._segClef), lv.accidentals, this.rng, this._prevStep);
+      this.enemies.push({
+        id: this._nextId++, arrive: this._genBeat, dur: durId, beats: dur.beats,
+        clef: this._segClef, step: p.step, acc: p.acc, midi: p.midi, pos: p.pos,
+        tint: Math.floor(this.rng() * 4),
+      });
+      this._prevStep = p.step;
+      this._genBeat += dur.beats;
+      this._segCount++;
+    }
+
+    _fill() {
+      const { Const } = CH;
+      const look = (Const.SPAWN_X - Const.JUDGE_X) / Const.PX_PER_BEAT + 1.5;
+      while (this._genBeat <= this.beatPos + look) this._spawnOne();
+    }
+
+    update(dt) {
+      if (this.over) return;
+      dt = Math.min(Math.max(dt, 0), 0.1);
+      this.beatPos += (dt * this.bpm()) / 60;
+      this._fill();
+      const clef = this.clefAt(this.beatPos);
+      if (clef !== this._shownClef) {
+        this._shownClef = clef;
+        this.events.push({ type: 'clef', clef });
+      }
+      for (const e of this.enemies) {
+        if (this.enemyX(e) <= CH.Const.CLEF_HIT_X) { this._end('reached'); return; }
+      }
+    }
+
+    // 현재 템포의 판정 창(박 단위)
+    windows() {
+      return CH.Rhythm.timingWindows(this.bpm(), CH.Levels.TIMING);
+    }
+
+    // 건반의 목표: 박자선에서 판정 활성 범위 안에 있는 음표 중 가장 가까운 것. 없으면 null.
+    target() {
+      const active = this.windows().active;
+      let best = null, bestD = Infinity;
+      for (const e of this.enemies) {
+        const d = Math.abs(e.arrive - this.beatPos);
+        if (d <= active && d < bestD) { best = e; bestD = d; }
+      }
+      return best;
+    }
+
+    // 건반 입력. 활성 범위 밖에서 누른 건 무시한다 (미스도, 콤보 끊김도 없다).
+    press(midi) {
+      if (this.over) return { type: 'none' };
+      const { Const, Levels } = CH;
+      const target = this.target();
+      if (!target) return { type: 'none', reason: 'out' };
+
+      const judged = CH.Notation.judgePress(target.midi, midi);
+      if (judged === 'wrong') {
+        this.combo = 0;
+        const res = { type: 'wrong', enemy: target, x: this.enemyX(target), over: this.level.wrongEndsGame };
+        this.events.push(res);
+        if (this.level.wrongEndsGame) this._end('wrong');
+        return res;
+      }
+
+      const bpm = this.bpm();
+      const deltaBeats = target.arrive - this.beatPos;
+      const deltaSec = (deltaBeats * 60) / bpm;
+      const grade = CH.Rhythm.gradeTiming(deltaBeats, this.windows());
+      const octaveMiss = judged === 'octave';
+      const points = CH.Rhythm.pointsFor({
+        grade, octaveMiss, combo: this.combo, bpm, levelMul: this.level.mul,
+        gradePoints: Levels.GRADE_POINTS, baseBpm: Const.BASE_BPM,
+      });
+      this.score += points;
+      this.kills++;
+      this.counts[grade]++;
+      if (grade !== 'ok' && !octaveMiss) {
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+      }
+      this.enemies = this.enemies.filter((e) => e !== target);
+      const res = { type: 'kill', grade, octaveMiss, points, enemy: target, deltaBeats, deltaSec, x: this.enemyX(target) };
+      this.events.push(res);
+      return res;
+    }
+
+    _end(reason) {
+      this.over = true;
+      this.reason = reason;
+      this.events.push({ type: 'over', reason });
+    }
+
+    drain() {
+      const ev = this.events;
+      this.events = [];
+      return ev;
+    }
+
+    summary() {
+      const good = this.counts.perfect + this.counts.good;
+      return {
+        score: this.score, kills: this.kills, maxCombo: this.maxCombo,
+        accuracy: this.kills ? Math.round((good / this.kills) * 100) : 0,
+        reason: this.reason,
+      };
+    }
+  }
+
+  CH.Game = Game;
+  if (typeof module !== 'undefined') module.exports = Game;
+})();
+
+// SVG 조각 만들기: 음자리표, 임시표, 적(음표), 깃발. 문자열만 만들어서 화면과 시험 양쪽에서 쓸 수 있다.
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+  const f1 = (n) => Math.round(n * 10) / 10;
+
+  // 오선 위의 음자리표. S = 줄 간격(px), yb = 맨 아래 줄의 y, x0 = 왼쪽 끝.
+  function clefOnStaff(clefId, x0, yb, S, fill) {
+    const clef = CH.Notation.CLEFS[clefId];
+    const g = CH.Glyphs[clef.glyph];
+    const k = S / CH.GlyphStaff.space;
+    // C 음자리표 글자는 알토(3번째 줄) 기준 → 가리키는 줄로 이동
+    const dy = clef.glyph === 'C' ? (3 - clef.line) * S : 0;
+    const tr = `translate(${f1(x0 - g.b[0] * k)},${f1(yb + dy)}) scale(${k.toFixed(5)},${(-k).toFixed(5)}) translate(0,${-CH.GlyphStaff.bottom})`;
+    return `<path transform="${tr}" d="${g.d}" fill="${fill}"/>`;
+  }
+
+  // 임시표 (♯ ♭): (cx, cy)를 글자 중심으로, 높이 h(px)
+  function accidental(kind, cx, cy, h, fill) {
+    const g = CH.Glyphs[kind];
+    const k = h / (g.b[3] - g.b[1]);
+    const gcx = (g.b[0] + g.b[2]) / 2;
+    const gcy = kind === 'flat' ? g.b[1] + (g.b[3] - g.b[1]) * 0.36 : (g.b[1] + g.b[3]) / 2; // ♭은 둥근 부분이 머리 높이에 오게
+    return `<path transform="translate(${f1(cx)},${f1(cy)}) scale(${k.toFixed(5)},${(-k).toFixed(5)}) translate(${-gcx},${-gcy})" d="${g.d}" fill="${fill}"/>`;
+  }
+
+  // 적(음표). 머리 중심이 (0,0). style 은 테마가 정한다.
+  function enemySvg(e, style, S) {
+    const dur = CH.Rhythm.DURS[e.dur];
+    const half = S / 2;
+    const stemDown = e.pos >= 4;
+    const whole = dur.id === 'whole';
+    const hw = whole ? 13 : 10.5;
+    const ink = style.ink;
+    let s = '';
+
+    // 덧줄 (머리 기준 상대 y)
+    for (const L of CH.Notation.ledgerLines(e.pos)) {
+      const y = (e.pos - L) * half;
+      s += `<line x1="-18" x2="18" y1="${y}" y2="${y}" stroke="${style.ledger}" stroke-width="2.2" stroke-linecap="round"/>`;
+    }
+
+    // 임시표
+    if (e.acc) s += accidental(e.acc > 0 ? 'sharp' : 'flat', -(hw + 12), 0, 52, ink);
+
+    // 기둥과 꼬리
+    if (dur.stem) {
+      const x = stemDown ? -(hw - 1.5) : hw - 1.5;
+      const y2 = stemDown ? 41 : -41;
+      s += `<line x1="${x}" y1="${stemDown ? 1 : -1}" x2="${x}" y2="${y2}" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
+      for (let i = 0; i < dur.flags; i++) {
+        s += stemDown
+          ? `<path d="M${x} ${y2 - i * 9} c2 -10 14 -12 12 -24" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`
+          : `<path d="M${x} ${y2 + i * 9} c2 12 16 14 14 30" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
+      }
+    }
+
+    // 점음표의 점
+    if (dur.dot) s += `<circle cx="${hw + 7}" cy="${e.pos % 2 === 0 ? -5.5 : 0}" r="2.6" fill="${ink}"/>`;
+
+    // 머리
+    const fill = dur.open ? style.openFill : style.headFill(e.tint);
+    const stroke = style.headStroke(e.tint);
+    s += whole
+      ? `<ellipse cx="0" cy="0" rx="13" ry="8.6" fill="${fill}" stroke="${stroke}" stroke-width="3"/>`
+      : `<ellipse cx="0" cy="0" rx="10.5" ry="8" transform="rotate(-20)" fill="${fill}" stroke="${stroke}" stroke-width="2.8"/>`;
+
+    // 얼굴
+    const ex = whole ? 5 : 3.5;
+    if (style.eyes === 'angry') {
+      const eye = dur.open ? ink : style.eyeWhite;
+      s += `<circle cx="${-ex}" cy="-1" r="2.2" fill="${eye}"/><circle cx="${ex}" cy="-2" r="2.2" fill="${eye}"/>`;
+      if (!dur.open) s += `<circle cx="${-ex}" cy="-0.6" r="1" fill="${style.pupil}"/><circle cx="${ex}" cy="-1.6" r="1" fill="${style.pupil}"/>`;
+      const brow = dur.open ? ink : style.eyeWhite;
+      s += `<line x1="${-ex - 3.5}" y1="-5" x2="${-ex + 2.5}" y2="-3" stroke="${brow}" stroke-width="1.5" stroke-linecap="round"/><line x1="${ex + 4.5}" y1="-7" x2="${ex - 1.5}" y2="-4" stroke="${brow}" stroke-width="1.5" stroke-linecap="round"/>`;
+    } else {
+      s += `<circle cx="${-ex}" cy="-1" r="2" fill="${style.eyeDark}"/><circle cx="${ex}" cy="-2" r="2" fill="${style.eyeDark}"/>`;
+      s += `<circle cx="${-ex - 2.8}" cy="2.2" r="1.9" fill="${style.blush}" opacity="0.85"/><circle cx="${ex + 2.8}" cy="1.2" r="1.9" fill="${style.blush}" opacity="0.85"/>`;
+      s += `<path d="M${-2} 3 q2 2.2 4 0" fill="none" stroke="${style.eyeDark}" stroke-width="1.3" stroke-linecap="round"/>`;
+    }
+    return s;
+  }
+
+  // 나라 깃발 (홈/난이도 화면용). w×h 박스.
+  function flagSvg(clefId, o) { // clefId: 글자 모양을 정하는 음자리표, o.color: 깃발 색
+    const w = o.w, h = o.h, pw = Math.max(3, Math.round(w * 0.045));
+    const bw = w - pw - 2, bh = h * 0.8;
+    const clef = CH.Notation.CLEFS[clefId];
+    const g = CH.Glyphs[clef.glyph];
+    const target = { G: 0.5, F: 0.3, C: 0.4 }[clef.glyph] * h; // 글자 높이(깃발 높이 비율)
+    const k = target / (g.b[3] - g.b[1]);
+    const gw = (g.b[2] - g.b[0]) * k;
+    const cx = pw + bw / 2, cy = bh * 0.46;
+    const tr = `translate(${f1(cx - gw / 2 - g.b[0] * k)},${f1(cy + ((g.b[3] + g.b[1]) / 2) * k)}) scale(${k.toFixed(5)},${(-k).toFixed(5)})`;
+    const star = o.star
+      ? `<polygon points="${pw / 2},${-9} ${pw / 2 + 2.6},-2.6 ${pw / 2 + 9},-2.2 ${pw / 2 + 4},2.2 ${pw / 2 + 5.6},8.6 ${pw / 2},4.8 ${pw / 2 - 5.6},8.6 ${pw / 2 - 4},2.2 ${pw / 2 - 9},-2.2 ${pw / 2 - 2.6},-2.6" fill="${o.pole}"/>`
+      : '';
+    return `<svg viewBox="-10 -12 ${w + 14} ${h + 16}" width="${w + 14}" height="${h + 16}" aria-hidden="true" style="overflow:visible">
+<rect x="0" y="0" width="${pw}" height="${h}" rx="${pw / 2}" fill="${o.pole}"/>${star}
+<g transform="translate(${pw},3)"><polygon points="0,0 ${bw},0 ${bw},${bh} ${bw / 2},${bh * 0.82} 0,${bh}" fill="${o.color}"/>
+<g transform="translate(${-pw},0)"><path transform="${tr}" d="${g.d}" fill="${o.glyph}"/></g></g></svg>`;
+  }
+
+  CH.Render = { clefOnStaff, accidental, enemySvg, flagSvg };
+  if (typeof module !== 'undefined') module.exports = CH.Render;
+})();
+
+// 소리: 외부 파일 없이 WebAudio 로 직접 만든다. 건반을 누르면 그 음이 나온다.
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+
+  const Audio = {
+    ctx: null,
+    master: null,
+    muted: false,
+    timbre: { type: 'triangle', overtone: 0 },
+
+    // 반드시 사용자 터치 안에서 호출 (모바일 브라우저 규칙)
+    unlock() {
+      try {
+        if (!this.ctx) {
+          const C = globalThis.AudioContext || globalThis.webkitAudioContext;
+          if (!C) return;
+          this.ctx = new C();
+          this.master = this.ctx.createGain();
+          this.master.gain.value = this.muted ? 0 : 0.7;
+          this.master.connect(this.ctx.destination);
+          this.bgmOut = this.ctx.createGain();   // 브금 전체 음량 (효과음보다 작게)
+          this.bgmOut.gain.value = 0.5;
+          this.bgmOut.connect(this.master);
+          const n = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.25), this.ctx.sampleRate);
+          const d = n.getChannelData(0);
+          for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+          this.noiseBuf = n;
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      } catch (e) { this.ctx = null; }
+    },
+
+    setMuted(m) {
+      this.muted = !!m;
+      if (this.master) this.master.gain.value = this.muted ? 0 : 0.7;
+    },
+
+    tone(freq, o) {
+      if (!this.ctx || this.muted) return;
+      o = o || {};
+      try {
+        const t0 = this.ctx.currentTime + (o.delay || 0);
+        const dur = o.dur || 0.5;
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(o.vol || 0.22, t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        g.connect(this.master);
+        const osc = this.ctx.createOscillator();
+        osc.type = o.type || this.timbre.type;
+        osc.frequency.value = freq;
+        osc.connect(g);
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.05);
+        if (this.timbre.overtone && !o.noOvertone) {
+          const g2 = this.ctx.createGain();
+          g2.gain.setValueAtTime(0.0001, t0);
+          g2.gain.exponentialRampToValueAtTime((o.vol || 0.22) * this.timbre.overtone, t0 + 0.01);
+          g2.gain.exponentialRampToValueAtTime(0.0001, t0 + dur * 0.7);
+          g2.connect(this.master);
+          const o2 = this.ctx.createOscillator();
+          o2.type = 'sine';
+          o2.frequency.value = freq * 2;
+          o2.connect(g2);
+          o2.start(t0);
+          o2.stop(t0 + dur + 0.05);
+        }
+      } catch (e) { /* 소리 실패는 게임을 멈추지 않는다 */ }
+    },
+
+    // ---- 브금 재료: t = 소리 낼 시각(ctx 시간). 모두 bgmOut 으로 나간다. ----
+    _env(t, peak, dur, node) {
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      node.connect(g); g.connect(this.bgmOut);
+    },
+    kick(t, vol) {
+      try {
+        const o = this.ctx.createOscillator(); o.type = 'sine';
+        o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(48, t + 0.12);
+        this._env(t, vol, 0.2, o); o.start(t); o.stop(t + 0.25);
+      } catch (e) { /* 무시 */ }
+    },
+    noise(t, vol, dur, hp) {
+      try {
+        const src = this.ctx.createBufferSource(); src.buffer = this.noiseBuf;
+        const f = this.ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp;
+        src.connect(f); this._env(t, vol, dur, f); src.start(t); src.stop(t + dur + 0.02);
+      } catch (e) { /* 무시 */ }
+    },
+    snare(t, vol) { this.noise(t, vol, 0.14, 1800); },
+    hat(t, vol) { this.noise(t, vol, 0.05, 7000); },
+    tick(t, freq, vol) {
+      try {
+        const o = this.ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+        this._env(t, vol, 0.07, o); o.start(t); o.stop(t + 0.1);
+      } catch (e) { /* 무시 */ }
+    },
+    pad(t, dur, freq, vol) { // 길게 까는 낮은 한 음 (누른 음과 부딪히지 않게 아주 작게)
+      try {
+        const o = this.ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(vol, t + dur * 0.25);
+        g.gain.linearRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(this.bgmOut); o.start(t); o.stop(t + dur + 0.05);
+      } catch (e) { /* 무시 */ }
+    },
+
+    note(midi) { this.tone(440 * Math.pow(2, (midi - 69) / 12), { dur: 0.55 }); },
+    kill(grade) {
+      if (grade === 'perfect') { this.tone(1318, { dur: 0.18, vol: 0.1, type: 'sine', noOvertone: true }); this.tone(1760, { dur: 0.22, vol: 0.08, type: 'sine', delay: 0.06, noOvertone: true }); }
+      else this.tone(988, { dur: 0.12, vol: 0.07, type: 'sine', noOvertone: true });
+    },
+    wrong() { this.tone(110, { dur: 0.22, vol: 0.14, type: 'sawtooth', noOvertone: true }); },
+    over() { [392, 330, 262, 196].forEach((f, i) => this.tone(f, { dur: 0.35, vol: 0.16, delay: i * 0.16, noOvertone: true })); },
+    clef() { [660, 880, 1100].forEach((f, i) => this.tone(f, { dur: 0.2, vol: 0.09, type: 'sine', delay: i * 0.07, noOvertone: true })); },
+  };
+
+  CH.Audio = Audio;
+  if (typeof module !== 'undefined') module.exports = Audio;
+})();
+
+// 브금: 박자에 맞춰 나오는 리듬 소리. 멜로디는 없다(누른 음과 부딪히지 않게).
+// 게임 중에는 게임의 박(beatPos)과 템포를 따라가고, 첫 화면에서는 일정한 템포로 흐른다.
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+
+  const LOOKAHEAD = 0.12; // 이 시간(초) 안에 올 박은 미리 예약한다
+
+  // 이미 예약한 박(last) 다음부터, LOOKAHEAD 안에 오는 박과 그때까지의 초(delay)를 알려준다.
+  function planBeats(last, beatPos, bpm, look) {
+    const out = [];
+    for (let n = last + 1; ; n++) {
+      const delay = ((n - beatPos) * 60) / bpm;
+      if (delay > look) break;
+      out.push({ n, delay: Math.max(0, delay) });
+    }
+    return out;
+  }
+
+  const Bgm = {
+    muted: false,       // 브금만 끄기
+    mode: null,         // null | 'home' | 'game'
+    timer: 0,
+    last: -1,
+    provider: null,     // () => ({ beatPos, bpm })
+
+    // 'home': 첫 화면(고정 템포) / 'game': provider 가 주는 박을 따라감
+    start(mode, provider) {
+      this.stop();
+      const A = CH.Audio;
+      if (!A || !A.ctx) return;       // 사용자 터치 전에는 소리를 낼 수 없다
+      this.mode = mode;
+      if (mode === 'home') {
+        const t0 = A.ctx.currentTime, bpm = CH.Theme.bgm.homeBpm;
+        this.provider = () => ({ beatPos: ((A.ctx.currentTime - t0) * bpm) / 60, bpm });
+      } else {
+        this.provider = provider;
+      }
+      const { beatPos } = this.provider();
+      this.last = Math.ceil(beatPos) - 1;
+      this.timer = setInterval(() => this.tick(), 30);
+      this.tick();
+    },
+
+    stop() {
+      clearInterval(this.timer);
+      this.timer = 0;
+      this.mode = null;
+    },
+
+    tick() {
+      const A = CH.Audio;
+      if (!this.mode || !A.ctx) return;
+      const { beatPos, bpm } = this.provider();
+      const spb = 60 / bpm;
+      const quiet = this.mode === 'home' ? 0.7 : 1;
+      for (const b of planBeats(this.last, beatPos, bpm, LOOKAHEAD)) {
+        this.last = b.n;
+        if (A.muted || this.muted) continue;
+        CH.Theme.bgm.step(A, b.n, A.ctx.currentTime + b.delay, spb, quiet);
+      }
+    },
+  };
+
+  CH.Bgm = Bgm;
+  CH.planBeats = planBeats;
+  if (typeof module !== 'undefined') module.exports = Bgm;
+})();
+
+// 테마 1: CLEF HEROES (전장). 규칙은 같고 색, 문구, 적의 얼굴, 소리만 다르다.
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+  CH.Theme = {
+    id: 'heroes',
+    docTitle: 'CLEF HEROES',
+    fonts: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700;900&family=Playfair+Display:ital,wght@1,700&display=swap',
+    themeColor: '#12141c',
+    logoHtml: 'CLEF <span class="hl">HEROES</span>',
+    subtitle: '음자리표 나라를 고르고 장수가 되어<br>쏟아지는 음표를 물리쳐요!',
+    overTitle: 'DEFEAT',
+    labels: { perfect: 'PERFECT', good: 'GOOD', ok: 'OK', wrong: 'MISS!', octave: '옥타브 달라요' },
+    flag: { G: '#2f5fbf', F: '#a5322d', C: '#1f7a5c', pole: '#d9a441', glyph: '#f2e8d0', star: false },
+    tag: { G: ['#2a3a63', '#cfe0ff'], F: ['#4a2523', '#ffd3cf'], C: ['#1c4a3b', '#c9f2e2'] },
+    note: {
+      ink: '#1b1a17', ledger: '#1b1a17', eyes: 'angry',
+      headFill: () => '#1b1a17', headStroke: () => '#1b1a17', openFill: '#f2e8d0',
+      eyeWhite: '#f2e8d0', pupil: '#c0392b',
+    },
+    timbre: { type: 'triangle', overtone: 0 },
+    // 쓰러지는 연출: 칼날 자국이 번쩍 지나가고, 음표가 비틀 기울어지며 쓰러지고, 먼지와 불꽃이 튄다.
+    defeat: {
+      cls: 'd-fall',
+      fx(grade) {
+        const n = { perfect: 8, good: 6, ok: 4 }[grade];
+        const len = { perfect: 36, good: 30, ok: 22 }[grade];
+        const w = { perfect: 5, good: 4, ok: 3 }[grade];
+        const gold = grade === 'perfect';
+        let h = `<line class="slash" x1="${-len}" y1="${-len * 0.8}" x2="${len}" y2="${len * 0.8}" stroke="${gold ? '#d9a441' : '#1b1a17'}" stroke-width="${w}"/>`;
+        if (gold) h += `<line class="slash two" x1="${len}" y1="${-len * 0.8}" x2="${-len}" y2="${len * 0.8}" stroke="#1b1a17" stroke-width="${w - 1}"/>`;
+        for (let i = 0; i < n; i++) {
+          const a = (Math.PI * 2 * i) / n + 0.4, d = 26 + (i % 3) * 8;
+          h += `<g class="pt" style="--dx:${(Math.cos(a) * d).toFixed(1)}px;--dy:${(Math.sin(a) * d).toFixed(1)}px"><circle r="${i % 2 ? 3.4 : 2.4}" fill="${i % 2 ? '#d9a441' : '#6b6250'}"/></g>`;
+        }
+        return h;
+      },
+    },
+    // 브금: 행진 북소리. step(소리재료, 박 번호, 시각, 한 박의 길이(초), 음량배율)
+    bgm: {
+      homeBpm: 84,
+      step(v, n, t, spb, q) {
+        const b = n % 4;
+        v.kick(t, (b === 0 ? 0.5 : 0.36) * q);
+        if (b === 1 || b === 3) v.snare(t, 0.2 * q);
+        v.hat(t + spb / 2, 0.08 * q);
+        if (b === 0) v.pad(t, spb * 4, 65.4, 0.08 * q);
+      },
+    },
+    glyphInk: '#1b1a17',
+    stageDecor: (yb, S) =>
+      `<rect x="12" y="${yb - 4 * S - 30}" width="70" height="${4 * S + 66}" rx="10" fill="#d9a441" opacity="0.22"/>` +
+      `<line x1="10" y1="${yb - 4 * S - 44}" x2="10" y2="${yb + 40}" stroke="#d9a441" stroke-width="3" stroke-linecap="round"/>`,
+    homeDecor: () =>
+      `<svg viewBox="0 0 390 150" aria-hidden="true"><g stroke="#2a2f40" stroke-width="1.5"><line x1="0" y1="30" x2="390" y2="30"/><line x1="0" y1="48" x2="390" y2="48"/><line x1="0" y1="66" x2="390" y2="66"/><line x1="0" y1="84" x2="390" y2="84"/><line x1="0" y1="102" x2="390" y2="102"/></g></svg>`,
+    css: `:root{
+--bg:#12141c;--surface:#1d2130;--border:#3a4260;--card-border:1px solid #3a4260;--text:#f2e8d0;--text2:#cfc8b6;--muted:#b9b2a0;
+--hl:#d9a441;--en:#d9a441;--mark:#d9a441;--bar-on:#d9a441;--bar-off:#3a4260;--hot-bg:#241a1f;--hot-line:#8a3a35;--hot-mark:#ff8a7a;
+--accent:#d9a441;--accent-ink:#12141c;--radius:16px;--btn-radius:14px;
+--hud:#12141c;--stage:#f2e8d0;--ink:#1b1a17;--judge:#d9a441;--label:#8a5a00;--stage-muted:#6b6250;--dot-off:#6b6250;
+--combo:#d9a441;--heart:#e5484d;--perfect:#8a5a00;--good:#2f6b3a;--bad:#b3261e;--spark:#d9a441;
+--kb:#0d0f15;--obtn:#1d2130;--obtn-line:#3a4260;--oct:#d9a441;--key:#f2e8d0;--key-line:#f2e8d0;--key-ink:#1b1a17;--key-down:#d9a441;
+--key-black:#2a2f40;--key-black-down:#d9a441;--bad-key:#ff8a7a;--scrim:rgba(5,6,10,.72);
+--over:#ff8a7a;--score:#d9a441;--pill:#2a3a63;--pill-ink:#cfe0ff;
+--font-d:'Cinzel',Georgia,'Times New Roman',serif;--font-k:'Noto Serif KR','Noto Sans KR',serif;--font-b:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+.d-fall{animation:dfall .55s ease-in forwards}
+@keyframes dfall{0%{transform:none;opacity:1;filter:brightness(2.4)}15%{filter:none}100%{transform:translate(-8px,34px) rotate(-38deg);opacity:0}}
+.slash{fill:none;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:slashgo .3s ease-out forwards}
+.slash.two{animation-delay:.07s}
+@keyframes slashgo{0%{stroke-dashoffset:100;opacity:1}60%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.pt{animation:ptfly .55s ease-out forwards}
+@keyframes ptfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}`,
+  };
+})();
+
+// 화면: 나라 선택 → 난이도 선택 → 게임 → 결과. 규칙은 엔진, 모양은 테마가 정한다.
+(function () {
+  const CH = globalThis.CH || (globalThis.CH = {});
+  const { Const, Levels, Notation: N, Render: R, Audio, Bgm, Theme: T } = CH;
+  const { LEVELS, COUNTRIES } = Levels;
+
+  const S = 22;       // 오선 줄 간격(px)
+  const YB = 344;     // 맨 아래 줄의 y
+  const STAFF_X0 = 8, STAFF_X1 = 382;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  const LEVEL_DESC = [
+    '건반 한 옥타브 안의 음만 나와요',
+    '덧줄이 1개까지 나와요',
+    '덧줄이 3개까지 나오고 빨라져요',
+    '임시표가 나오고 글자가 사라져요<br>틀리면 바로 끝나요',
+  ];
+
+  // ---------- 저장소 (막혀 있어도 게임은 계속된다) ----------
+  const Store = {
+    mem: {},
+    get(k, def) {
+      try { const v = localStorage.getItem(T.id + ':' + k); if (v !== null) return JSON.parse(v); } catch (e) { /* 무시 */ }
+      return k in this.mem ? this.mem[k] : def;
+    },
+    set(k, v) {
+      this.mem[k] = v;
+      try { localStorage.setItem(T.id + ':' + k, JSON.stringify(v)); } catch (e) { /* 무시 */ }
+    },
+  };
+
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const bestKey = (c, li) => `best:${c}:${li}`;
+
+  const ICON = {
+    soundOn: '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+    soundOff: '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6"/><path d="M22 9l-5 6"/></svg>',
+    bgmOn: '<svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>',
+    bgmOff: '<svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path d="M3 3l18 18"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" role="img" aria-label="목숨 1개"><path d="M12 21s-7-4.6-9.5-9C1 9 2.5 5 6.5 5c2 0 3.5 1.2 5.5 3 2-1.8 3.5-3 5.5-3 4 0 5.5 4 4 7-2.5 4.4-9.5 9-9.5 9z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg>',
+  };
+
+  // ---------- 화면 조각 ----------
+  // country: 'G' | 'F' | 'C' — 깃발 색은 나라로, 글자는 C 나라면 알토 모양으로
+  function flagHtml(country, w, h) {
+    return R.flagSvg(country === 'C' ? 'C3' : country, { w, h, color: T.flag[country], pole: T.flag.pole, glyph: T.flag.glyph, star: T.flag.star });
+  }
+
+  function homeHtml() {
+    const cards = Object.keys(COUNTRIES).map((id) => {
+      const c = COUNTRIES[id];
+      const tg = T.tag[id];
+      return `<button class="card country" data-country="${id}">
+<div class="flag">${flagHtml(id, 76, 128)}</div>
+<div class="ctext"><div class="en">${c.en}</div><div class="kr">${c.kr}</div><div class="desc">${c.desc}</div>
+<span class="tag" style="background:${tg[0]};color:${tg[1]}">${c.tag}</span></div></button>`;
+    }).join('');
+    return `<div class="decor" style="top:30px">${T.homeDecor()}</div>
+<button class="icon-btn" id="btn-sound" aria-label="소리 켜기 끄기"></button>
+<button class="icon-btn" id="btn-bgm" aria-label="브금 켜기 끄기"></button>
+<div class="head"><h1 class="logo">${T.logoHtml}</h1><p class="sub">${T.subtitle}</p></div>
+<div class="cards">${cards}</div>
+<div class="foot">내 최고 기록은 이 폰에 저장돼요</div>`;
+  }
+
+  function levelHtml(country) {
+    const c = COUNTRIES[country];
+    const cards = LEVELS.map((lv, i) => {
+      const best = Store.get(bestKey(country, i), 0);
+      const bars = [0, 1, 2, 3].map((b) => `<i class="${b <= i ? 'on' : ''}"></i>`).join('');
+      return `<button class="card level${i === 3 ? ' hot' : ''}" data-level="${i}">
+<div class="mark">${lv.mark}</div>
+<div class="ltext"><div class="lname"><b>${lv.name}</b><span>${lv.kr}</span></div><div class="ldesc">${LEVEL_DESC[i]}</div>
+<div class="bars">${bars}</div></div>
+${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
+    }).join('');
+    return `<div class="lhead"><button class="back" id="btn-back">← 나라 다시 고르기</button>
+<div class="lrow">${flagHtml(country, 30, 52)}<div><div class="en">${c.en} · ${c.tag}</div><h2>얼마나 세게 몰아칠까요?</h2></div></div></div>
+<div class="cards">${cards}</div>`;
+  }
+
+  function keysHtml() {
+    let h = '';
+    for (let i = 0; i < 8; i++) {
+      const semi = N.WHITE_SEMI[i];
+      const name = N.KR[i % 7];
+      h += `<button class="key white" data-semi="${semi}" aria-label="${name}" style="left:${i * 12.5}%">${name}</button>`;
+    }
+    for (const b of N.BLACK_KEYS) {
+      h += `<button class="key black" data-semi="${b.semi}" aria-label="검은 건반" style="left:${(b.after + 1) * 12.5 - 3.5 - 0.1}%"></button>`;
+    }
+    return h;
+  }
+
+  function gameHtml() {
+    return `<div class="top">
+<div class="hud">
+<div class="c"><div class="k">SCORE</div><div class="v" id="h-score">0</div></div>
+<div class="c mid"><div class="k">COMBO</div><div class="v" id="h-combo">×0</div></div>
+<div class="c r"><div class="life">${ICON.heart}<span>×1</span></div><div class="tempo" id="h-tempo">BPM 60 · ×1.0</div></div>
+<button class="pause" id="btn-pause" aria-label="일시정지">${ICON.pause}</button>
+</div>
+<div class="stage-wrap" id="stage-wrap"></div>
+</div>
+<div class="kbd">
+<div class="oct"><button class="obtn" id="oct-down" aria-label="옥타브 내리기">−</button>
+<div class="oinfo"><div class="k">OCTAVE</div><div class="v" id="oct-label">4</div></div>
+<button class="obtn" id="oct-up" aria-label="옥타브 올리기">+</button></div>
+<div class="keys" id="keys">${keysHtml()}</div>
+</div>
+<div class="overlay" id="pause-ov"><div class="panel"><h3>PAUSE</h3>
+<button class="btn primary" id="btn-resume">계속하기</button>
+<button class="btn" id="btn-sound2"></button>
+<button class="btn" id="btn-bgm2"></button>
+<button class="btn" id="btn-quit">나가기</button></div></div>`;
+  }
+
+  function overHtml() {
+    return `<div class="decor" style="top:70px">${T.homeDecor()}</div>
+<div class="over-main"><h1 class="over-title">${T.overTitle}</h1><div class="over-sub" id="o-sub"></div>
+<div class="over-score"><div class="k">SCORE</div><div class="v" id="o-score">0</div></div>
+<div id="o-badge"></div></div>
+<div class="stats">
+<div class="stat"><b id="o-kills">0</b><span>처치한 적</span></div>
+<div class="stat"><b id="o-combo">0</b><span>최대 콤보</span></div>
+<div class="stat"><b id="o-acc">0%</b><span>박자 정확도</span></div></div>
+<div class="over-btns"><button class="btn primary" id="btn-again">다시 도전</button>
+<div class="row"><button class="btn" id="btn-level">난이도 바꾸기</button><button class="btn" id="btn-country">나라 바꾸기</button></div></div>`;
+  }
+
+  // ---------- 무대(오선보) ----------
+  function stageSvg(clefId) {
+    const lines = [0, 1, 2, 3, 4].map((i) => `<line x1="${STAFF_X0}" x2="${STAFF_X1}" y1="${YB - i * S}" y2="${YB - i * S}"/>`).join('');
+    const dots = [0, 1, 2, 3].map((i) => `<circle class="dot" cx="${84 + i * 28}" cy="518" r="7" data-dot="${i}"/>`).join('');
+    return `<svg id="stage" viewBox="0 0 ${Const.STAGE_W} ${Const.STAGE_H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="오선보. 오른쪽에서 왼쪽으로 음표 적이 다가온다">
+<rect class="bg" x="0" y="0" width="${Const.STAGE_W}" height="${Const.STAGE_H}"/>
+<g id="decor">${T.stageDecor(YB, S)}</g>
+<rect class="band" x="${Const.JUDGE_X - 12}" y="96" width="24" height="404"/>
+<rect class="flash" id="flash" x="${Const.JUDGE_X - 12}" y="96" width="24" height="404"/>
+<line class="judge" x1="${Const.JUDGE_X}" x2="${Const.JUDGE_X}" y1="96" y2="500"/>
+<text class="jl" x="${Const.JUDGE_X}" y="86">박자선</text>
+<g class="staff">${lines}</g>
+<g id="clef-layer"></g>
+<text class="clefname" id="clef-name" x="14" y="${YB + 62}"></text>
+<g id="enemies"></g>
+<g id="ghost"></g>
+<g id="fxs"></g>
+<text class="beatlab" x="16" y="522">BEAT</text>${dots}
+<text class="hint" x="${Const.STAGE_W / 2 + 8}" y="548">음표가 박자선에 닿을 때 눌러 보세요!</text>
+</svg>`;
+  }
+
+  // ---------- 앱 ----------
+  function start() {
+    Audio.timbre = T.timbre;
+    Audio.setMuted(Store.get('muted', false));
+
+    const app = $('#app');
+    app.innerHTML = `<section class="screen active" id="s-home">${homeHtml()}</section>
+<section class="screen" id="s-level"></section>
+<section class="screen" id="s-game">${gameHtml()}</section>
+<section class="screen" id="s-over">${overHtml()}</section>`;
+
+    const st = { screen: 's-home', country: 'G', li: 0, game: null, octave: 4, paused: false, raf: 0, last: 0, els: new Map(), beatDot: -1, ending: false, hudCache: {} };
+    const debug = (CH.debug = { state: st });
+
+    const go = (id) => {
+      st.screen = id;
+      $$('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
+      if (id === 's-over') Bgm.stop(); else if (id !== 's-game') homeBgm();
+    };
+
+    // 브금: 첫 화면과 난이도 화면에서는 일정한 템포로, 게임 중에는 게임 박자에 맞춰 흐른다.
+    // (브라우저 규칙상 첫 터치 뒤부터 소리가 난다)
+    Bgm.muted = Store.get('bgmMuted', false);
+    function homeBgm() {
+      if ((st.screen === 's-home' || st.screen === 's-level') && Audio.ctx && Bgm.mode !== 'home') Bgm.start('home');
+    }
+    function gameBgm() {
+      Bgm.start('game', () => (st.game ? { beatPos: st.game.beatPos, bpm: st.game.bpm() } : { beatPos: 0, bpm: 60 }));
+    }
+
+    // 소리 버튼
+    const refreshSound = () => {
+      const on = !Audio.muted;
+      $('#btn-sound').innerHTML = on ? ICON.soundOn : ICON.soundOff;
+      $('#btn-sound2').textContent = on ? '소리 끄기' : '소리 켜기';
+    };
+    const toggleSound = () => { Audio.unlock(); Audio.setMuted(!Audio.muted); Store.set('muted', Audio.muted); refreshSound(); };
+    const refreshBgm = () => {
+      $('#btn-bgm').innerHTML = Bgm.muted ? ICON.bgmOff : ICON.bgmOn;
+      $('#btn-bgm2').textContent = Bgm.muted ? '브금 켜기' : '브금 끄기';
+    };
+    const toggleBgm = () => { Audio.unlock(); Bgm.muted = !Bgm.muted; Store.set('bgmMuted', Bgm.muted); refreshBgm(); };
+    refreshSound();
+    refreshBgm();
+    $('#btn-sound').addEventListener('click', toggleSound);
+    $('#btn-sound2').addEventListener('click', toggleSound);
+    $('#btn-bgm').addEventListener('click', toggleBgm);
+    $('#btn-bgm2').addEventListener('click', toggleBgm);
+
+    // 첫 터치에서 소리 준비
+    document.addEventListener('pointerdown', () => { Audio.unlock(); homeBgm(); }, { passive: true });
+
+    // 나라 선택
+    $('#s-home').addEventListener('click', (ev) => {
+      const b = ev.target.closest('[data-country]');
+      if (!b) return;
+      st.country = b.dataset.country;
+      $('#s-level').innerHTML = levelHtml(st.country);
+      go('s-level');
+    });
+    // 난이도 선택
+    $('#s-level').addEventListener('click', (ev) => {
+      if (ev.target.closest('#btn-back')) { go('s-home'); return; }
+      const b = ev.target.closest('[data-level]');
+      if (!b) return;
+      st.li = +b.dataset.level;
+      startGame();
+    });
+
+    function showLevel() {
+      $('#s-level').innerHTML = levelHtml(st.country);
+      go('s-level');
+    }
+
+    // ----- 게임 시작 -----
+    function startGame() {
+      cancelAnimationFrame(st.raf);
+      Audio.unlock();
+      st.game = new CH.Game({ country: st.country, levelIndex: st.li });
+      st.paused = false;
+      st.ending = false;
+      st.els.clear();
+      st.beatDot = -1;
+      st.hudCache = {};
+      $('#stage-wrap').innerHTML = stageSvg();
+      drawClef(st.game.clefAt(0), false);
+      const lv = LEVELS[st.li];
+      $('#keys').classList.toggle('nolabel', !lv.keyLabels);
+      $('#keys').classList.toggle('noacc', !lv.accidentals);
+      setOctave(N.defaultOctave(st.game.clefAt(0)));
+      $('#pause-ov').classList.remove('show');
+      go('s-game');
+      gameBgm();
+      st.last = performance.now();
+      st.raf = requestAnimationFrame(frame);
+    }
+
+    function drawClef(clefId, announce) {
+      const clef = N.CLEFS[clefId];
+      $('#clef-layer').innerHTML = `<g class="${announce ? 'clefpulse' : ''}">${R.clefOnStaff(clefId, 14, YB, S, T.glyphInk)}</g>`;
+      $('#clef-name').textContent = clef.glyph === 'C' ? `${clef.name} 음자리표` : clef.name;
+    }
+
+    function setOctave(o) {
+      st.octave = Math.max(N.OCTAVE_MIN, Math.min(N.OCTAVE_MAX, o));
+      $('#oct-label').innerHTML = `${st.octave} <small>(도${st.octave} ~ 도${st.octave + 1})</small>`;
+    }
+    $('#oct-down').addEventListener('click', () => setOctave(st.octave - 1));
+    $('#oct-up').addEventListener('click', () => setOctave(st.octave + 1));
+
+    // ----- 건반 -----
+    const keysEl = $('#keys');
+    keysEl.addEventListener('pointerdown', (ev) => {
+      const k = ev.target.closest('[data-semi]');
+      if (!k) return;
+      ev.preventDefault();
+      k.classList.add('down');
+      pressKey(k, +k.dataset.semi);
+    });
+    const release = (ev) => {
+      const k = ev.target.closest && ev.target.closest('[data-semi]');
+      if (k) k.classList.remove('down');
+    };
+    keysEl.addEventListener('pointerup', release);
+    keysEl.addEventListener('pointercancel', release);
+    keysEl.addEventListener('pointerout', release);
+    keysEl.addEventListener('contextmenu', (ev) => ev.preventDefault());
+
+    function pressKey(keyEl, semi) {
+      const g = st.game;
+      if (!g || g.over || st.paused) return;
+      const midi = N.keyMidi(st.octave, semi);
+      Audio.note(midi);
+      const res = g.press(midi);
+      showPressed(midi, res);
+      handleEvents(keyEl);
+    }
+
+    // 누른 음이 오선의 어디인지 박자선 위에 빛으로 보여준다 (음표와 맞든 안 맞든 항상).
+    // 맞혔으면 판정 색, 아니면 기본 색. 오선 화면 밖의 높이는 가장자리 화살표로 알려준다.
+    const Y_TOP = 104, Y_BOT = 492;
+    function showPressed(midi, res) {
+      const g = st.game;
+      const cls = res.type === 'kill' ? res.grade : (res.type === 'wrong' ? 'bad' : 'plain');
+      const flash = $('#flash');
+      flash.setAttribute('class', 'flash ' + cls);
+      void flash.getBoundingClientRect();
+      flash.classList.add('go');
+
+      const sp = N.spellMidi(midi);
+      const pos = N.staffPos(g.clefAt(g.beatPos), sp.step);
+      const y = YB - pos * (S / 2);
+      const x = Const.JUDGE_X;
+      let inner;
+      if (y < Y_TOP || y > Y_BOT) {
+        const up = y < Y_TOP;
+        const ay = up ? Y_TOP : Y_BOT, d = up ? -1 : 1;
+        inner = `<path d="M${x - 10} ${ay} L${x} ${ay + d * 14} L${x + 10} ${ay} Z" transform="rotate(${up ? 180 : 0} ${x} ${ay + d * 7})"/>`;
+      } else {
+        const half = S / 2;
+        let t = '';
+        for (const L of N.ledgerLines(pos)) {
+          const ly = (pos - L) * half;
+          t += `<line x1="-18" x2="18" y1="${ly}" y2="${ly}"/>`;
+        }
+        if (sp.acc) t += R.accidental('sharp', -24, 0, 40, 'currentColor');
+        t += `<ellipse rx="11.5" ry="8.5" transform="rotate(-20)"/>`;
+        inner = `<g transform="translate(${x},${y})">${t}</g>`;
+      }
+      const el = svgEl('g', { class: 'ghostn ' + cls });
+      el.innerHTML = inner;
+      const layer = $('#ghost');
+      layer.innerHTML = '';
+      layer.appendChild(el);
+      clearTimeout(showPressed.t);
+      showPressed.t = setTimeout(() => { if (el.parentNode === layer) el.remove(); }, 450);
+    }
+
+    // ----- 효과 -----
+    function svgEl(tag, attrs) {
+      const e = document.createElementNS(NS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      return e;
+    }
+    function fxText(x, y, text, cls) {
+      const t = svgEl('text', { x, y, class: 'fx fxt ' + cls });
+      t.textContent = text;
+      $('#fxs').appendChild(t);
+      setTimeout(() => t.remove(), cls.includes('big') ? 1500 : 850);
+    }
+    // 적이 쓰러지는 연출: 맞힌 음표를 그 자리에 남겨 테마별 모션(T.defeat.cls)으로 사라지게 하고, 입자(T.defeat.fx)를 터뜨린다.
+    function defeatFx(ev, y) {
+      const el = st.els.get(ev.enemy.id);
+      if (el) { st.els.delete(ev.enemy.id); el.remove(); }
+      const g = svgEl('g', { transform: `translate(${ev.x.toFixed(1)},${y.toFixed(1)})`, class: 'fx defeat ' + ev.grade });
+      const body = svgEl('g', { class: 'dbody ' + T.defeat.cls });
+      body.innerHTML = R.enemySvg(ev.enemy, T.note, S);
+      g.appendChild(body);
+      const parts = svgEl('g', { class: 'dparts' });
+      parts.innerHTML = T.defeat.fx(ev.grade);
+      g.appendChild(parts);
+      $('#fxs').appendChild(g);
+      setTimeout(() => g.remove(), 800);
+    }
+
+    function handleEvents(keyEl) {
+      const g = st.game;
+      for (const ev of g.drain()) {
+        if (ev.type === 'kill') {
+          const y = YB - ev.enemy.pos * (S / 2);
+          const x = Math.max(150, Math.min(ev.x + 40, Const.STAGE_W - 60));
+          defeatFx(ev, y);
+          fxText(x, y - 26, `${T.labels[ev.grade]} +${fmt(ev.points)}`, ev.grade);
+          if (ev.octaveMiss) fxText(x, y - 50, T.labels.octave, 'ok small');
+          Audio.kill(ev.grade);
+        } else if (ev.type === 'wrong') {
+          const stage = $('#stage');
+          stage.classList.remove('shake'); void stage.getBoundingClientRect(); stage.classList.add('shake');
+          fxText(Const.JUDGE_X + 40, 130, T.labels.wrong, 'bad');
+          if (keyEl) { keyEl.classList.add('bad'); setTimeout(() => keyEl.classList.remove('bad'), 220); }
+          Audio.wrong();
+        } else if (ev.type === 'clef') {
+          drawClef(ev.clef, true);
+          setOctave(N.defaultOctave(ev.clef));
+          fxText(Const.STAGE_W / 2, 140, `음자리표가 바뀌었어요! ${N.CLEFS[ev.clef].name}`, 'perfect big');
+          Audio.clef();
+        } else if (ev.type === 'over') {
+          finish(ev.reason);
+        }
+      }
+    }
+
+    // ----- 매 프레임 -----
+    function frame(now) {
+      const g = st.game;
+      if (!g) return;
+      st.raf = requestAnimationFrame(frame);
+      const dt = (now - st.last) / 1000;
+      st.last = now;
+      if (!st.paused && !g.over) g.update(dt);
+      handleEvents(null);
+      renderEnemies();
+      renderHud();
+    }
+
+    function renderEnemies() {
+      const g = st.game;
+      const layer = $('#enemies');
+      const alive = new Set();
+      const tgt = g.target();
+      for (const e of g.enemies) {
+        const x = g.enemyX(e);
+        if (x > Const.STAGE_W + 70) continue;
+        alive.add(e.id);
+        let el = st.els.get(e.id);
+        if (!el) {
+          el = svgEl('g', {});
+          el.innerHTML = R.enemySvg(e, T.note, S);
+          layer.appendChild(el);
+          st.els.set(e.id, el);
+        }
+        el.setAttribute('transform', `translate(${x.toFixed(1)},${(YB - e.pos * (S / 2)).toFixed(1)})`);
+        el.classList.toggle('inwin', e === tgt);
+      }
+      for (const [id, el] of st.els) {
+        if (!alive.has(id)) { el.remove(); st.els.delete(id); }
+      }
+    }
+
+    function setText(id, v) {
+      if (st.hudCache[id] !== v) { st.hudCache[id] = v; $('#' + id).textContent = v; }
+    }
+    function renderHud() {
+      const g = st.game;
+      setText('h-score', fmt(g.score));
+      setText('h-combo', '×' + g.combo);
+      const bpm = g.bpm();
+      setText('h-tempo', `BPM ${bpm} · ×${(bpm / Const.BASE_BPM).toFixed(1)}`);
+      const d = Math.floor(g.beatPos) % 4;
+      if (d !== st.beatDot) {
+        st.beatDot = d;
+        $$('#stage .dot').forEach((c, i) => c.classList.toggle('on', i === d));
+      }
+    }
+
+    // ----- 끝내기 -----
+    function finish(reason) {
+      if (st.ending) return;
+      st.ending = true;
+      Bgm.stop();
+      Audio.over();
+      const sum = st.game.summary();
+      const prev = Store.get(bestKey(st.country, st.li), 0);
+      const record = sum.score > prev;
+      if (record) Store.set(bestKey(st.country, st.li), sum.score);
+      const lv = LEVELS[st.li];
+      $('#o-sub').textContent = `${COUNTRIES[st.country].kr} · ${lv.name}`;
+      $('#o-score').textContent = fmt(sum.score);
+      $('#o-kills').textContent = sum.kills;
+      $('#o-combo').textContent = '×' + sum.maxCombo;
+      $('#o-acc').textContent = sum.accuracy + '%';
+      const bestNow = Math.max(prev, sum.score);
+      $('#o-badge').innerHTML = record && sum.score > 0
+        ? '<span class="badge">내 최고 기록 갱신!</span>'
+        : (bestNow > 0 ? `<span class="badge">내 최고 기록 ${fmt(bestNow)}</span>` : '');
+      if (reason === 'reached') {
+        const stage = $('#stage');
+        stage.classList.add('shake');
+      }
+      setTimeout(() => { cancelAnimationFrame(st.raf); go('s-over'); }, 1000);
+    }
+
+    $('#btn-again').addEventListener('click', startGame);
+    $('#btn-level').addEventListener('click', showLevel);
+    $('#btn-country').addEventListener('click', () => go('s-home'));
+
+    // ----- 일시정지 -----
+    const pause = () => { if (st.game && !st.game.over && !st.paused) { st.paused = true; Bgm.stop(); $('#pause-ov').classList.add('show'); } };
+    const resume = () => { st.paused = false; st.last = performance.now(); $('#pause-ov').classList.remove('show'); gameBgm(); };
+    $('#btn-pause').addEventListener('click', pause);
+    $('#btn-resume').addEventListener('click', resume);
+    $('#btn-quit').addEventListener('click', () => { cancelAnimationFrame(st.raf); st.game = null; $('#pause-ov').classList.remove('show'); showLevel(); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { pause(); if (Bgm.mode === 'home') Bgm.stop(); } else homeBgm();
+    });
+
+    // 시험/점검용: 키보드 대신 직접 누르기 (일반 플레이에는 영향 없음)
+    debug.startGame = startGame;
+    debug.pressKey = (midi) => { const g = st.game; Audio.note(midi); const res = g.press(midi); showPressed(midi, res); handleEvents(null); return res; };
+  }
+
+  CH.start = start;
+})();
+
+document.documentElement.setAttribute('data-theme', globalThis.CH.Theme.id);
+globalThis.CH.start();
+</script>
+</body>
+</html>
