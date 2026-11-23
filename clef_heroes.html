@@ -25,6 +25,10 @@
 @keyframes slashgo{0%{stroke-dashoffset:100;opacity:1}60%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
 .pt{animation:ptfly .55s ease-out forwards}
 @keyframes ptfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+.sweep{opacity:0;transform-box:fill-box;animation:sweepgo .6s ease-out both}
+@keyframes sweepgo{0%{transform:translateX(0) skewX(-18deg);opacity:.0}20%{opacity:.55}100%{transform:translateX(480px) skewX(-18deg);opacity:0}}
+.o-fall{animation-name:ofall}
+@keyframes ofall{0%{transform:none;opacity:1}100%{transform:translate(-6px,60px) rotate(-28deg);opacity:.15}}
 /* 공통 스타일. 색과 글꼴은 테마가 변수로 정한다. */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;background:var(--bg);overscroll-behavior:none}
@@ -101,8 +105,8 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .stage-wrap svg{display:block;width:100%;height:100%}
 #stage .bg{fill:var(--stage)}
 #stage .staff line{stroke:var(--ink);stroke-width:1.7}
-#stage .judge{stroke:var(--judge);stroke-width:2;stroke-dasharray:6 5}
-#stage .band{fill:var(--judge);opacity:.18}
+#stage .judge{stroke:var(--judge);stroke-width:calc(2px + 3px * var(--heat,0));stroke-dasharray:6 5;transition:stroke-width .3s;filter:drop-shadow(0 0 calc(7px * var(--heat,0)) var(--judge))}
+#stage .band{fill:var(--judge);opacity:calc(.18 + .22 * var(--heat,0));transition:opacity .3s}
 #stage .flash{fill:var(--judge);opacity:0;pointer-events:none}
 #stage .flash.perfect{fill:var(--perfect)}
 #stage .flash.good{fill:var(--good)}
@@ -170,10 +174,12 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .row .btn{flex:1;min-height:48px;font-size:14px}
 
 #s-over{align-items:stretch}
-.over-main{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 24px}
-.over-title{margin:0;font-family:var(--font-d);font-weight:700;font-size:clamp(40px,13vw,54px);line-height:1.1;letter-spacing:4px;color:var(--over)}
+.over-body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:24px}
+.over-main{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 24px}
+.over-main .titlebar{align-self:stretch;justify-content:center;margin-bottom:6px}
+.over-title{position:relative;padding:0 18px 0 22px;background:var(--bg);border-radius:12px;margin:0;font-family:var(--font-d);font-weight:700;font-size:clamp(40px,13vw,54px);line-height:1.1;letter-spacing:4px;color:var(--over)}
 .over-sub{font-size:14px;color:var(--muted)}
-.over-score .k{font-size:12px;letter-spacing:4px;color:var(--muted);text-align:center;margin-top:26px}
+.over-score .k{font-size:12px;letter-spacing:4px;color:var(--muted);text-align:center;margin-top:18px}
 .over-score .v{font-family:var(--font-d);font-weight:700;font-size:clamp(46px,16vw,64px);line-height:1.05;color:var(--score);text-align:center}
 .badge{margin-top:8px;display:inline-flex;align-items:center;min-height:30px;padding:0 14px;border-radius:15px;background:var(--pill);color:var(--pill-ink);font-size:13px;font-weight:700}
 .stats{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 24px}
@@ -181,6 +187,23 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .stat b{font-family:var(--font-d);font-size:24px}
 .stat span{font-size:12px;color:var(--muted)}
 .over-btns{position:relative;padding:18px 24px max(26px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+
+/* ---- 연출: 처치 흔들림, 음자리표 반응, 화면 번쩍, 콤보/템포/게임오버 공통 ---- */
+.kick-p{animation:kickp .14s}
+.kick-g{animation:kickg .1s}
+@keyframes kickp{0%,100%{transform:translate(0,0)}25%{transform:translate(-3px,1.5px)}50%{transform:translate(3px,-1.5px)}75%{transform:translate(-1.5px,0)}}
+@keyframes kickg{0%,100%{transform:translate(0,0)}35%{transform:translate(-1.5px,0)}70%{transform:translate(1.5px,0)}}
+#clef-layer{transform-box:fill-box;transform-origin:center}
+#clef-layer.cbump{animation:cbump .22s}
+@keyframes cbump{0%,100%{transform:scale(1)}40%{transform:scale(1.13)}}
+#flashbg{pointer-events:none;opacity:0}
+#flashbg.go{animation:fbg var(--fd,.4s) ease-out}
+@keyframes fbg{0%{opacity:var(--fp,.35)}100%{opacity:0}}
+.rain{animation:rain var(--t,1.2s) ease-in var(--d,0s) both}
+@keyframes rain{0%{transform:translate(0,-30px) rotate(0);opacity:0}15%{opacity:1}100%{transform:translate(var(--dx,0),var(--dy,420px)) rotate(var(--r,200deg));opacity:0}}
+.spd{stroke:var(--judge);stroke-linecap:round;animation:spd .6s ease-out both}
+@keyframes spd{0%{transform:translateX(120px);opacity:0}30%{opacity:.8}100%{transform:translateX(-260px);opacity:0}}
+#clef-layer.o-end{animation-duration:1.2s;animation-fill-mode:both;animation-timing-function:ease-in}
 
 </style>
 </head>
@@ -430,6 +453,9 @@ button{font-family:inherit;color:inherit;cursor:pointer}
     return Math.round(base * (octaveMiss ? 0.5 : 1) * comboMul * tempoMul * levelMul);
   }
 
+  // 콤보 달성 연출을 보여 주는 콤보 수: 5, 10, 20, 이후 10마다
+  function comboMilestone(n) { return n === 5 || n === 10 || n === 20 || (n > 20 && n % 10 === 0); }
+
   // 가중치 무작위 선택
   function pickWeighted(list, rng) {
     const total = list.reduce((a, x) => a + x.w, 0);
@@ -438,7 +464,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
     return list[list.length - 1];
   }
 
-  CH.Rhythm = { DURS, bpmFor, timingWindows, gradeTiming, pointsFor, pickWeighted };
+  CH.Rhythm = { DURS, bpmFor, comboMilestone, timingWindows, gradeTiming, pointsFor, pickWeighted };
   if (typeof module !== 'undefined') module.exports = CH.Rhythm;
 })();
 
@@ -467,6 +493,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
       this.enemies = [];
       this.events = [];
 
+      this._lastBpm = this.bpm();
       this._nextId = 1;
       this._genBeat = Const.LEAD_IN;
       this._segCount = 0;
@@ -589,13 +616,18 @@ button{font-family:inherit;color:inherit;cursor:pointer}
       this.score += points;
       this.kills++;
       this.counts[grade]++;
+      let comboHit = 0;
       if (grade !== 'ok' && !octaveMiss) {
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        comboHit = this.combo;
       }
       this.enemies = this.enemies.filter((e) => e !== target);
       const res = { type: 'kill', grade, octaveMiss, points, enemy: target, deltaBeats, deltaSec, x: this.enemyX(target) };
       this.events.push(res);
+      if (comboHit && CH.Rhythm.comboMilestone(comboHit)) this.events.push({ type: 'combo', n: comboHit });
+      const nowBpm = this.bpm();
+      if (nowBpm > this._lastBpm) { this._lastBpm = nowBpm; this.events.push({ type: 'tempo', bpm: nowBpm }); }
       return res;
     }
 
@@ -849,6 +881,8 @@ button{font-family:inherit;color:inherit;cursor:pointer}
     },
     wrong() { this.tone(110, { dur: 0.22, vol: 0.14, type: 'sawtooth', noOvertone: true }); },
     over() { [392, 330, 262, 196].forEach((f, i) => this.tone(f, { dur: 0.35, vol: 0.16, delay: i * 0.16, noOvertone: true })); },
+    combo(n) { [523.25, 659.25, 783.99, 1046.5].concat(n >= 20 ? [1318.5] : []).forEach((f, i) => this.tone(f, { dur: 0.22, vol: 0.1, type: 'sine', delay: i * 0.07, noOvertone: true })); },
+    tempo() { [440, 554.4, 659.25].forEach((f, i) => this.tone(f, { dur: 0.1, vol: 0.08, type: 'sine', delay: i * 0.06, noOvertone: true })); },
     clef() { [660, 880, 1100].forEach((f, i) => this.tone(f, { dur: 0.2, vol: 0.09, type: 'sine', delay: i * 0.07, noOvertone: true })); },
   };
 
@@ -961,6 +995,26 @@ button{font-family:inherit;color:inherit;cursor:pointer}
         return h;
       },
     },
+    // 콤보 달성: 금빛 빛줄기가 화면을 가로지른다.
+    combo: {
+      flash: '#d9a441',
+      fx(n) {
+        let h = '';
+        const k = n >= 20 ? 3 : 2;
+        for (let i = 0; i < k; i++) h += `<rect class="sweep" x="-60" y="0" width="${26 + i * 16}" height="560" fill="#d9a441" style="animation-delay:${i * 0.12}s"/>`;
+        return h;
+      },
+    },
+    // 게임 오버: 붉은 번쩍임, 깃발(음자리표)이 쓰러지고 재가 흩날린다.
+    over: {
+      flash: '#b3261e',
+      cls: 'o-fall',
+      fx() {
+        let h = '';
+        for (let i = 0; i < 16; i++) h += `<circle class="rain" cx="${20 + i * 23}" cy="60" r="${2 + (i % 3)}" fill="${i % 3 ? '#3a3a40' : '#c0392b'}" style="--dx:${(i % 2 ? 18 : -18)}px;--dy:${300 + (i % 5) * 40}px;--t:${1.1 + (i % 4) * 0.12}s;--d:${(i % 6) * 0.05}s"/>`;
+        return h;
+      },
+    },
     // 브금: 행진 북소리. step(소리재료, 박 번호, 시각, 한 박의 길이(초), 음량배율)
     bgm: {
       homeBpm: 84,
@@ -995,7 +1049,11 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .slash.two{animation-delay:.07s}
 @keyframes slashgo{0%{stroke-dashoffset:100;opacity:1}60%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
 .pt{animation:ptfly .55s ease-out forwards}
-@keyframes ptfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}`,
+@keyframes ptfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+.sweep{opacity:0;transform-box:fill-box;animation:sweepgo .6s ease-out both}
+@keyframes sweepgo{0%{transform:translateX(0) skewX(-18deg);opacity:.0}20%{opacity:.55}100%{transform:translateX(480px) skewX(-18deg);opacity:0}}
+.o-fall{animation-name:ofall}
+@keyframes ofall{0%{transform:none;opacity:1}100%{transform:translate(-6px,60px) rotate(-28deg);opacity:.15}}`,
   };
 })();
 
@@ -1119,14 +1177,14 @@ ${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
   }
 
   function overHtml() {
-    return `<div class="decor" style="top:70px">${T.homeDecor()}</div>
-<div class="over-main"><h1 class="over-title">${T.overTitle}</h1><div class="over-sub" id="o-sub"></div>
+    return `<div class="over-body">
+<div class="over-main"><div class="titlebar">${T.titleStaff}<h1 class="over-title">${T.overTitle}</h1></div><div class="over-sub" id="o-sub"></div>
 <div class="over-score"><div class="k">SCORE</div><div class="v" id="o-score">0</div></div>
 <div id="o-badge"></div></div>
 <div class="stats">
 <div class="stat"><b id="o-kills">0</b><span>처치한 적</span></div>
 <div class="stat"><b id="o-combo">0</b><span>최대 콤보</span></div>
-<div class="stat"><b id="o-acc">0%</b><span>박자 정확도</span></div></div>
+<div class="stat"><b id="o-acc">0%</b><span>박자 정확도</span></div></div></div>
 <div class="over-btns"><button class="btn primary" id="btn-again">다시 도전</button>
 <div class="row"><button class="btn" id="btn-level">난이도 바꾸기</button><button class="btn" id="btn-country">나라 바꾸기</button></div></div>`;
   }
@@ -1148,6 +1206,7 @@ ${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
 <g id="enemies"></g>
 <g id="ghost"></g>
 <g id="fxs"></g>
+<rect id="flashbg" x="0" y="0" width="${Const.STAGE_W}" height="${Const.STAGE_H}"/>
 <text class="beatlab" x="16" y="522">BEAT</text>${dots}
 <text class="hint" x="${Const.STAGE_W / 2 + 8}" y="548">음표가 박자선에 닿을 때 눌러 보세요!</text>
 </svg>`;
@@ -1358,6 +1417,33 @@ ${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
       setTimeout(() => g.remove(), 800);
     }
 
+    // 같은 애니메이션을 다시 처음부터 재생한다.
+    function replay(el, cls, ...others) {
+      others.forEach((o) => el.classList.remove(o));
+      el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls);
+    }
+    function flashBg(color, peak, dur) {
+      const f = $('#flashbg');
+      f.setAttribute('fill', color);
+      f.style.setProperty('--fp', peak);
+      f.style.setProperty('--fd', dur + 's');
+      replay(f, 'go');
+    }
+    function addFx(html, ms) {
+      const g = svgEl('g', { class: 'fx' });
+      g.innerHTML = html;
+      $('#fxs').appendChild(g);
+      setTimeout(() => g.remove(), ms);
+    }
+    function speedLines() {
+      let h = '';
+      for (let i = 0; i < 9; i++) {
+        const y = 110 + i * 42 + (i % 2) * 12, x = 170 + (i * 37) % 120;
+        h += `<line class="spd" x1="${x}" x2="${x + 60 + (i % 3) * 25}" y1="${y}" y2="${y}" stroke-width="${2 + (i % 2)}" style="animation-delay:${(i % 4) * 0.05}s"/>`;
+      }
+      addFx(h, 900);
+    }
+
     function handleEvents(keyEl) {
       const g = st.game;
       for (const ev of g.drain()) {
@@ -1368,9 +1454,13 @@ ${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
           fxText(x, y - 26, `${T.labels[ev.grade]} +${fmt(ev.points)}`, ev.grade);
           if (ev.octaveMiss) fxText(x, y - 50, T.labels.octave, 'ok small');
           Audio.kill(ev.grade);
+          const stg = $('#stage');
+          if (ev.grade === 'perfect') replay(stg, 'kick-p', 'kick-g', 'shake');
+          else if (ev.grade === 'good') replay(stg, 'kick-g', 'kick-p', 'shake');
+          replay($('#clef-layer'), 'cbump');
         } else if (ev.type === 'wrong') {
           const stage = $('#stage');
-          stage.classList.remove('shake'); void stage.getBoundingClientRect(); stage.classList.add('shake');
+          replay(stage, 'shake', 'kick-p', 'kick-g');
           fxText(Const.JUDGE_X + 40, 130, T.labels.wrong, 'bad');
           if (keyEl) { keyEl.classList.add('bad'); setTimeout(() => keyEl.classList.remove('bad'), 220); }
           Audio.wrong();
@@ -1379,6 +1469,15 @@ ${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
           setOctave(N.defaultOctave(ev.clef));
           fxText(Const.STAGE_W / 2, 140, `음자리표가 바뀌었어요! ${N.CLEFS[ev.clef].name}`, 'perfect big');
           Audio.clef();
+        } else if (ev.type === 'combo') {
+          fxText(Const.STAGE_W / 2, 200, `COMBO ×${ev.n}!`, 'perfect big');
+          flashBg(T.combo.flash, 0.35, 0.45);
+          addFx(T.combo.fx(ev.n), 1500);
+          Audio.combo(ev.n);
+        } else if (ev.type === 'tempo') {
+          fxText(Const.STAGE_W / 2 + 30, 250, `TEMPO UP! ♩=${ev.bpm}`, 'good big');
+          speedLines();
+          Audio.tempo();
         } else if (ev.type === 'over') {
           finish(ev.reason);
         }
@@ -1429,6 +1528,8 @@ ${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
       const g = st.game;
       setText('h-score', fmt(g.score));
       setText('h-combo', '×' + g.combo);
+      const heat = (Math.min(g.combo, 20) / 20).toFixed(2);
+      if (st.hudCache.heat !== heat) { st.hudCache.heat = heat; $('#stage').style.setProperty('--heat', heat); }
       const bpm = g.bpm();
       setText('h-tempo', `BPM ${bpm} · ×${(bpm / Const.BASE_BPM).toFixed(1)}`);
       const d = Math.floor(g.beatPos) % 4;
@@ -1458,11 +1559,13 @@ ${best ? `<div class="best">최고<br>${fmt(best)}</div>` : ''}</button>`;
       $('#o-badge').innerHTML = record && sum.score > 0
         ? '<span class="badge">내 최고 기록 갱신!</span>'
         : (bestNow > 0 ? `<span class="badge">내 최고 기록 ${fmt(bestNow)}</span>` : '');
-      if (reason === 'reached') {
-        const stage = $('#stage');
-        stage.classList.add('shake');
-      }
-      setTimeout(() => { cancelAnimationFrame(st.raf); go('s-over'); }, 1000);
+      const stage = $('#stage');
+      if (reason === 'reached') replay(stage, 'shake', 'kick-p', 'kick-g');
+      flashBg(T.over.flash, 0.5, 0.7);
+      $('#clef-layer').classList.remove('cbump');
+      $('#clef-layer').classList.add('o-end', T.over.cls);
+      addFx(T.over.fx(), 1500);
+      setTimeout(() => { cancelAnimationFrame(st.raf); go('s-over'); }, 1400);
     }
 
     $('#btn-again').addEventListener('click', startGame);
